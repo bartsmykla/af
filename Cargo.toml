@@ -1,0 +1,25 @@
+[package]
+name = "af"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.97"
+clap = { version = "4.5.31", features = ["derive", "env"] }
+clap-verbosity-flag = "3.0.2"
+clap_complete_command = "0.6.1"
+cli-clipboard = "0.4.0"
+clio = { version = "0.3.5", features = ["clap-parse"] }
+console = "0.15.11"
+dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
+fern = { version = "0.7.1", features = ["colored"] }
+git2 = "0.20.0"
+humantime = "2.1.0"
+indicatif = "0.17.11"
+indicatif-log-bridge = "0.2.3"
+log = "0.4.26"
+octocrab = "0.43.0"
+phf = { version = "0.11.3", features = ["macros"] }
+regex = "1.11.1"
+thiserror = "2.0.12"
+tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
