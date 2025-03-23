@@ -27,9 +27,9 @@ jobs:
         - name: "macos-arm64"
           runner: macos-15
           target: aarch64-apple-darwin
-#        - name: "macos-amd64"
-#          runner: macos-15
-#          target: x86_64-apple-darwin
+        - name: "macos-amd64"
+          runner: macos-15
+          target: x86_64-apple-darwin
         - name: "linux-arm64"
           runner: ubuntu-24.04-arm
           target: aarch64-unknown-linux-musl
@@ -50,17 +50,18 @@ jobs:
     - name: "Setup Cache"
       uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
-    - name: "Install Cross"
-      if: contains(matrix.target, 'linux')
-      run: |
-        cargo rustc -- -Awarnings # hide warnings
-        cargo install cross --locked --git https://github.com/cross-rs/cross
+#    - name: "Install Cross"
+#      if: contains(matrix.target, 'linux')
+#      env:
+#        RUSTFLAGS: -Awarnings
+#      run: cargo install cross --locked --git https://github.com/cross-rs/cross
 
     - name: "Build Linux Binary"
       if: contains(matrix.target, 'linux')
-      env:
-        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gc
-      run: cross build --verbose --locked --release --color always --target ${{ matrix.target }}
+#      env:
+#        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gc
+      run: cargo build --verbose --locked --release --target ${{ matrix.target }}
+      # run: cross build --verbose --locked --release --color always --target ${{ matrix.target }}
 
     - name: "Build macOS Binary"
       env:
