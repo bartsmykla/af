@@ -11,6 +11,9 @@ permissions:
 env:
   PROJECT_NAME: af
   CARGO_TERM_COLOR: always
+  OPENSSL_LIB_DIR: /opt/homebrew/lib/
+  OPENSSL_INCLUDE_DIR: /opt/homebrew/include/
+  OPENSSL_DIR: /opt/homebrew/bin/openssl
 
 jobs:
   build-macos:
@@ -41,6 +44,24 @@ jobs:
 
     - name: "Build Binary"
       run: cargo build --verbose --locked --release --target ${{ matrix.target }}
+
+    - name: "Initialize Debug Shell"
+      if: failure() && runner.debug == '1'
+      env:
+        URL_INIT: https://lets.tunshell.com/init.sh
+        URL_API_SESSIONS: https://${{ vars.TUNSHELL_RELAY }}/api/sessions
+      run: |
+        TUNSHELL_KEYS="$(curl --silent --show-error --fail --request POST $URL_API_SESSIONS)"
+        
+        printf 'Debug Shell:\nsh %s L %s %s\n' \
+          "\$(curl --silent --show-error --fail $URL_INIT | psub)" \
+          "$(echo $TUNSHELL_KEYS | jq --raw-output .peer2_key)" \
+          '$TUNSHELL_SECRET' \
+          '${{ vars.TUNSHELL_RELAY }}'
+
+        curl --silent --show-error --fail $URL_INIT \
+          | sh /dev/stdin T $(echo $TUNSHELL_KEYS | jq --raw-output .peer1_key) \
+          '${{ secrets.TUNSHELL_SECRET }}' '${{ vars.TUNSHELL_RELAY }}'
 
   build-linux:
     runs-on: ${{ matrix.runner }}
@@ -73,3 +94,21 @@ jobs:
 
     - name: "Build Binary"
       run: cross build --verbose --locked --release --color always --target ${{ matrix.target }}
+
+    - name: "Initialize Debug Shell"
+      if: failure() && runner.debug == '1'
+      env:
+        URL_INIT: https://lets.tunshell.com/init.sh
+        URL_API_SESSIONS: https://${{ vars.TUNSHELL_RELAY }}/api/sessions
+      run: |
+        TUNSHELL_KEYS="$(curl --silent --show-error --fail --request POST $URL_API_SESSIONS)"
+        
+        printf 'Debug Shell:\nsh %s L %s %s\n' \
+          "\$(curl --silent --show-error --fail $URL_INIT | psub)" \
+          "$(echo $TUNSHELL_KEYS | jq --raw-output .peer2_key)" \
+          '$TUNSHELL_SECRET' \
+          '${{ vars.TUNSHELL_RELAY }}'
+
+        curl --silent --show-error --fail $URL_INIT \
+          | sh /dev/stdin T $(echo $TUNSHELL_KEYS | jq --raw-output .peer1_key) \
+          '${{ secrets.TUNSHELL_SECRET }}' '${{ vars.TUNSHELL_RELAY }}'
