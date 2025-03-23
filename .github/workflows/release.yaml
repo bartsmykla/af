@@ -52,7 +52,9 @@ jobs:
 
     - name: "Install Cross"
       if: contains(matrix.target, 'linux')
-      run: cargo install cross --locked --git https://github.com/cross-rs/cross
+      run: |
+        cargo rustc -- -Awarnings # hide warnings
+        cargo install cross --locked --git https://github.com/cross-rs/cross
 
     - name: "Build Linux Binary"
       if: contains(matrix.target, 'linux')
@@ -63,6 +65,8 @@ jobs:
     - name: "Build macOS Binary"
       env:
         OPENSSL_DIR: /opt/homebrew/bin/openssl
+        OPENSSL_LIB_DIR: /opt/homebrew/lib/
+        OPENSSL_INCLUDE_DIR: /opt/homebrew/include/
       if: contains(matrix.target, 'darwin')
       run: cargo build --verbose --locked --release --target ${{ matrix.target }}
 
