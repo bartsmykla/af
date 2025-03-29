@@ -16,113 +16,77 @@ jobs:
   build:
     runs-on: ${{ matrix.runner }}
 
-#    env:
-##      OPENSSL_LIB_DIR: /opt/homebrew/lib/
-##      OPENSSL_INCLUDE_DIR: /opt/homebrew/include/
-#      OPENSSL_DIR: ${{ matrix.env.OPENSSL_DIR }}
-
     strategy:
+      fail-fast: false
+
       matrix:
         include:
-#        - name: "macos-arm64"
-#          runner: macos-15
-#          target: aarch64-apple-darwin
-#        - name: "macos-amd64"
-#          runner: macos-15
-#          target: x86_64-apple-darwin
-        - name: "linux-arm64"
-          runner: ubuntu-24.04-arm
-          target: aarch64-unknown-linux-musl
-          target_arch: aarch64
-#        - name: "linux-amd64"
-#          runner: ubuntu-24.04
-#          target: x86_64-unknown-linux-musl
-#          target_arch: x86_64
+        - name: "macos-arm64"
+          runner: macos-15
+          target: aarch64-apple-darwin
+          env:
+            OPENSSL_DIR: /opt/homebrew/bin/openssl
+            OPENSSL_LIB_DIR: /opt/homebrew/lib/
+            OPENSSL_INCLUDE_DIR: /opt/homebrew/include/
+        - name: "macos-amd64"
+          runner: macOS-13
+          target: x86_64-apple-darwin
+          env:
+            OPENSSL_DIR: /usr/local/opt/openssl
+            OPENSSL_LIB_DIR: /usr/local/opt/openssl/lib
+            OPENSSL_INCLUDE_DIR: /usr/local/opt/openssl/include
 
     steps:
     - name: "Checkout"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - name: "Install Dependencies"
-      if: contains(matrix.target, 'linux')
-      run: |
-        sudo apt-get update
-        sudo apt-get --assume-yes install musl-tools clang llvm
-
     - name: "Install Rust"
       uses: dtolnay/rust-toolchain@888c2e1ea69ab0d4330cbf0af1ecc7b68f368cc1 # v1
       with:
         targets: ${{ matrix.target }}
-        toolchain: stable
-
-#    - name: "Install Cross"
-#      if: matrix.command == 'cross'
-#      uses: cargo-bins/cargo-binstall@b9bf4400702f721d469eec4d280125f650c85638 # v1.12.2
-#
-#    # Only install cross if we need it
-#    # Install via cargo-binstall which is faster
-#    - name: "Install Cross"
-#      if: matrix.command == 'cross'
-#      shell: bash
-#      run: |
-#        cargo binstall --no-confirm cross
+        toolchain: nightly
 
     - name: "Setup Cache"
       uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
-#    - name: "Install Cross"
-#      if: matrix.command == 'cross'
-#      env:
-#        RUSTFLAGS: -Awarnings
-#      run: cargo install cross --locked --git https://github.com/cross-rs/cross
-
-    - name: "Build Linux Binary"
-      if: contains(matrix.target, 'linux')
-      env:
-#        PKG_CONFIG_PATH: /usr/lib/${{ matrix.target_arch }}-linux-gnu/pkgconfig/
-#        OPENSSL_DIR: /usr/lib/ssl
-#        OPENSSL_LIB_DIR: /usr/lib/${{ matrix.target_arch }}-linux-gnu/
-#        OPENSSL_INCLUDE_DIR: /usr/include/openssl/
-#        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
-#        CC: ${{ matrix.target_arch }}-linux-gnu-gcc
-        CC_aarch64_unknown_linux_musl: clang
-        CXX_aarch64-unknown-linux-musl: clang++
-        AR_aarch64_unknown_linux_musl: llvm-ar
-        CFLAGS_aarch64_unknown_linux_musl: -isystem/usr/include/aarch64-linux-musl/
-        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS: >-
-          -Clink-self-contained=yes
-          -Clinker=rust-lld
-          -C 'link-args=-L/usr/lib/aarch64-linux-musl/ -fuse-ld=lld'
-      run: |
-        if [[ '${{ contains(matrix.target, 'linux') }}' == 'true' ]]; then
-          export OPENSSL_DIR="/usr/lib/ssl"
-          export OPENSSL_LIB_DIR="/usr/lib/${{ matrix.target_arch }}-linux-gnu/"
-          export OPENSSL_INCLUDE_DIR="/usr/include/openssl/"
-        fi
-        cargo build --verbose --locked --release --target ${{ matrix.target }}
-
     - name: "Build macOS Binary"
-      env:
-        OPENSSL_DIR: /opt/homebrew/bin/openssl
-        OPENSSL_LIB_DIR: /opt/homebrew/lib/
-        OPENSSL_INCLUDE_DIR: /opt/homebrew/include/
       if: contains(matrix.target, 'darwin')
-      run: ${{ matrix.command }} build --verbose --locked --release --target ${{ matrix.target }}
+      env:
+        OPENSSL_DIR: ${{ matrix.env.OPENSSL_DIR }}
+        OPENSSL_LIB_DIR: ${{ matrix.env.OPENSSL_LIB_DIR }}
+        OPENSSL_INCLUDE_DIR: ${{ matrix.env.OPENSSL_INCLUDE_DIR }}
+      run: |
+        cargo +nightly build -Z unstable-options \
+          --artifact-dir dist \
+          --target ${{ matrix.target }} \
+          --verbose \
+          --locked \
+          --release
+
+    - name: "Add Arch Suffix to Binary"
+      if: contains(matrix.target, 'darwin')
+      id: add-suffix
+      env:
+        MATRIX_NAME: ${{ matrix.name }}
+        BASE_PATH: dist/${{ env.PROJECT_NAME }}
+      run: |
+        final_path="$BASE_PATH-${MATRIX_NAME##*-}"
+        echo "binary_path=$final_path" >> "$GITHUB_OUTPUT"
+        
+        mv "$BASE_PATH" "$final_path"
+
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      if: success()
+      with:
+        name: ${{ matrix.name }}
+        path: ${{ steps.add-suffix.outputs.binary_path }}
+
+    ###########################################################################
+    #                                  DEBUG                                  #
+    ###########################################################################
 
     - name: "Initialize Debug Shell"
-      if: failure() && runner.debug == '1'
+      if: vars.FORCE_DEBUG_SHELL == 'true' || failure() && runner.debug == '1'
       env:
-        URL_INIT: https://lets.tunshell.com/init.sh
-        URL_API_SESSIONS: https://${{ vars.TUNSHELL_RELAY }}/api/sessions
-      run: |
-        TUNSHELL_KEYS="$(curl --silent --show-error --fail --request POST $URL_API_SESSIONS)"
-        
-        printf 'Debug Shell:\nsh %s L %s %s %s\n' \
-          "\$(curl --silent --show-error --fail $URL_INIT | psub)" \
-          "$(echo $TUNSHELL_KEYS | jq --raw-output .peer2_key)" \
-          '$TUNSHELL_SECRET' \
-          '${{ vars.TUNSHELL_RELAY }}'
-
-        curl --silent --show-error --fail $URL_INIT \
-          | sh -s -- T $(echo $TUNSHELL_KEYS | jq --raw-output .peer1_key) \
-          '${{ secrets.TUNSHELL_SECRET }}' '${{ vars.TUNSHELL_RELAY }}'
+        TUNSHELL_SECRET: ${{ secrets.TUNSHELL_SECRET }}
+      run: .github/scripts/debug-shell.bash
