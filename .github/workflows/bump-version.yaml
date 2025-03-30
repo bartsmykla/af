@@ -20,11 +20,6 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
-    - name: "Setup Cache"
-      uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
-      with: 
-        shared-key: ${{ github.repository }}
-
     - name: "Generate GitHub App Token"
       id: github-app-token
       uses: actions/create-github-app-token@af35edadc00be37caa72ed9f3e6d5f7801bfdf09 # v1.11.7
@@ -86,17 +81,20 @@ jobs:
         done
 
         # Commit changes
-        gh api graphql \
-          --field 'query=@.github/api/queries/createCommit.graphql' \
-          --field "githubRepository=$GITHUB_REPOSITORY" \
-          --field "branchName=$GITHUB_REF_NAME" \
-          --field "expectedHeadOid=$(git rev-parse HEAD)" \
-          --field "commitMessage=$NEW_TAG" \
-          "${files[@]}"
+        new_sha="$(
+          gh api graphql \
+            --jq '.data.createCommitOnBranch.commit.oid' \
+            --field 'query=@.github/api/queries/createCommit.graphql' \
+            --field "githubRepository=$GITHUB_REPOSITORY" \
+            --field "branchName=$GITHUB_REF_NAME" \
+            --field "expectedHeadOid=$(git rev-parse HEAD)" \
+            --field "commitMessage=$NEW_TAG" \
+            "${files[@]}"
+        )"
         
         # Create a new tag
         gh api graphql \
           --field 'query=@.github/api/queries/createRef.graphql' \
           --field "repoId=$(gh repo view "$GITHUB_REPOSITORY" --json id --jq .id)" \
           --field "name=refs/tags/$NEW_TAG" \
-          --field "sha=$(git rev-parse HEAD)"
+          --field "sha=$new_sha"

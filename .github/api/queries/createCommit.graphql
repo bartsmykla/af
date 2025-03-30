@@ -20,7 +20,7 @@ mutation (
         }
     ){
         commit {
-            url
+            oid
         }
     }
 }
