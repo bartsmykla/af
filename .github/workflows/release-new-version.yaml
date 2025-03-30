@@ -1,4 +1,4 @@
-name: "Manual: Release / Bump / Tag"
+name: "Bump Version"
 
 on:
   workflow_dispatch: {}
@@ -19,6 +19,9 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
+
+    - name: "Setup Cache"
+      uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
     - name: "Generate GitHub App Token"
       id: github-app-token
