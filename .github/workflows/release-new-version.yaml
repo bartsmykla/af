@@ -1,4 +1,4 @@
-name: "Release / Bump / Tag / Draft"
+name: "Manual: Release / Bump / Tag"
 
 on:
   workflow_dispatch: {}
@@ -27,6 +27,21 @@ jobs:
         app-id: ${{ secrets.APP_ID }}
         private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+    - name: "Get GitHub App User ID"
+      id: get-user-id
+      env:
+        APP_SLUG: ${{ steps.github-app-token.outputs.app-slug }}
+        GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
+      run: echo "user-id=$(gh api "/users/${{ env.APP_SLUG }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+    - name: "Set Commiter"
+      env:
+        APP_SLUG: ${{ steps.github-app-token.outputs.app-slug }}
+        USER_ID: ${{ steps.get-user-id.outputs.user-id }}
+      run: |
+        git config --global user.name '${{ env.APP_SLUG }}[bot]'
+        git config --global user.email '${{ env.USER_ID }}+${{ env.APP_SLUG }}[bot]@users.noreply.github.com'
+
     - name: "Calculate the Next Version"
       id: next-version
       uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
@@ -34,37 +49,49 @@ jobs:
         github_token: ${{ steps.github-app-token.outputs.token }}
         dry_run: true
 
-    - name: "Configure Git Commiter"
+    - name: "Bump version in Cargo.toml"
+      env:
+        NEW_VERSION: ${{ steps.next-version.outputs.new_version }}
       run: |
-        git config --local user.email "1196749+afek-bot[bot]@users.noreply.github.com"
-        git config --local user.name "afek-bot[bot]"
-
-    - name: "Install Cargo V" # tool to update versions in Cargo.toml and Cargo.lock
-      run: cargo install cargo-v
-
-    - name: "Bump Version"
-      run: cargo v --yes "${{ steps.next-version.outputs.new_version }}"
-
-    - name: "Add back trailing empty line to Cargo.toml" # It seems cargo v is removing it
-      run: |
-        [ -n "$(tail -c1 Cargo.toml)" ] && echo >> Cargo.toml
+        # Update Cargo.toml
+        sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml
         
-        if ! git diff --quiet || ! git diff --cached --quiet; then
-          git commit --all --signoff --amend --no-edit
-          git tag --delete "${{ steps.next-version.outputs.new_tag }}"
-          git tag "${{ steps.next-version.outputs.new_tag }}"
-        fi
+        # Update Cargo.lock
+        awk -v new_version="$NEW_VERSION" '
+          $0 == "[[package]]" { in_package = 1; print; next }
+          in_package && /^name = "af"/ { found_af = 1; print; next }
+          in_package && found_af && /^version = / {
+            print "version = \"" new_version "\""
+            in_package = 0; found_af = 0
+            next
+          }
+          { print }
+        ' Cargo.lock > Cargo.lock.tmp && mv Cargo.lock.tmp Cargo.lock
 
-    - name: "Push Commit and Tag with New Version"
-      uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa # master
-      with:
-        github_token: ${{ steps.github-app-token.outputs.token }}
-        tags: true
+    - name: "Commit and tag new version"
+      env:
+        NEW_TAG: ${{ steps.next-version.outputs.new_tag }}
+        GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
+      run: |
+        # Prepare --field flags for each changed file
+        files=()
+        for f in $(git status --porcelain | awk '{print $2}'); do
+          files+=(--field "files[][path]=$f")
+          files+=(--field "files[][contents]=$(base64 -w0 "$f")")
+        done
 
-    - name: "Draft a GitHub Release"
-      uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
-      with:
-        token: ${{ steps.github-app-token.outputs.token }}
-        tag_name: ${{ steps.next-version.outputs.new_tag }}
-        draft: true
-        generate_release_notes: true
+        # Commit changes
+        gh api graphql \
+          --field 'query=@.github/api/queries/createCommit.graphql' \
+          --field "githubRepository=$GITHUB_REPOSITORY" \
+          --field "branchName=$GITHUB_REF_NAME" \
+          --field "expectedHeadOid=$(git rev-parse HEAD)" \
+          --field "commitMessage=$NEW_TAG" \
+          "${files[@]}"
+        
+        # Create a new tag
+        gh api graphql \
+          --field 'query=@.github/api/queries/createRef.graphql' \
+          --field "repoId=$(gh repo view "$GITHUB_REPOSITORY" --json id --jq .id)" \
+          --field "name=refs/tags/$NEW_TAG" \
+          --field "sha=$(git rev-parse HEAD)"
