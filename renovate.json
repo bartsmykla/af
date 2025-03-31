@@ -1,6 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "prHourlyLimit": 15,
   "extends": [
-    "config:recommended"
+    "config:best-practices",
+    ":automergeDisabled",
+    ":gitSignOff",
+    ":label(dependencies)",
+    ":semanticCommitTypeAll(chore)"
   ]
 }
