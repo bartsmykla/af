@@ -1,8 +1,14 @@
-name: "Test"
+name: "Tests"
 
 on:
   pull_request:
     branches: ["master"]
+    paths-ignore: [".github", ".gitignore", "LICENSE"]
+
+  push:
+    branches: ["master"]
+    paths-ignore: [".github", ".gitignore", "LICENSE"]
+
   workflow_dispatch: {}
 
 permissions:
@@ -17,5 +23,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-    - name: Run tests
+
+    - name: "Run tests"
       run: cargo test --verbose
