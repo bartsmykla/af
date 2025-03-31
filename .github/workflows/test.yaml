@@ -3,11 +3,11 @@ name: "Tests"
 on:
   pull_request:
     branches: ["master"]
-    paths-ignore: [".github", ".gitignore", "LICENSE"]
+    paths: ["src", "Cargo.*"]
 
   push:
     branches: ["master"]
-    paths-ignore: [".github", ".gitignore", "LICENSE"]
+    paths: ["src", "Cargo.*"]
 
   workflow_dispatch: {}
 
