@@ -1,26 +1,27 @@
 mutation (
     $githubRepository: String!,
     $branchName: String!,
-    $expectedHeadOid: GitObjectID!
-    $commitMessage: String!
-    $files: [FileAddition!]!
+    $expectedHeadOid: GitObjectID!,
+    $commitMessage: String!,
+    $files: [FileAddition!]!,
 ) {
     createCommitOnBranch(
         input: {
-            branch:
-            {
+            branch: {
                 repositoryNameWithOwner: $githubRepository,
-                branchName: $branchName
+                branchName: $branchName,
             },
-            message: {headline: $commitMessage},
+            message: {
+                headline: $commitMessage,
+            },
             fileChanges: {
-                additions: $files
-            }
-            expectedHeadOid: $expectedHeadOid
+                additions: $files,
+            },
+            expectedHeadOid: $expectedHeadOid,
         }
-    ){
+    ) {
         commit {
-            oid
+            oid,
         }
     }
 }
