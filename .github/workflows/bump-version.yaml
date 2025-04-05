@@ -114,6 +114,10 @@ jobs:
   build:
     runs-on: ${{ matrix.runner }}
 
+    permissions:
+      id-token: write # necessary for generating artifact attestations
+      attestations: write # necessary for generating artifact attestations
+
     needs:
     - bump-version
     - define-matrix
@@ -174,7 +178,6 @@ jobs:
       with:
         subject-name: ${{ env.PROJECT_NAME }}-${{ matrix.name }}
         subject-digest: sha256:${{ steps.upload-artifacts.outputs.artifact-digest }}
-        github-token: ${{ steps.github-app-token.outputs.token }}
 
     ################################# DEBUG #################################
 
