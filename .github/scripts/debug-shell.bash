@@ -2,10 +2,9 @@
 
 set -euo pipefail
 
-if [[ -z "${TUNSHELL_SECRET:-}" ]]; then
-  printf 'Missing env var: TUNSHELL_SECRET\n' >&2
-  exit 1
-fi
+source "${BASH_SOURCE%/*}/_common.bash"
+
+common::check_env TUNSHELL_SECRET
 
 url_init="${URL_INIT:-https://lets.tunshell.com/init.sh}"
 tunshell_relay="${TUNSHELL_RELAY:-eu.relay.tunshell.com}"

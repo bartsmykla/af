@@ -52,49 +52,10 @@ jobs:
     - name: "Bump version in Cargo.toml"
       env:
         NEW_VERSION: ${{ steps.next-version.outputs.new_version }}
-      run: |
-        # Update Cargo.toml
-        sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml
-        
-        # Update Cargo.lock
-        awk -v new_version="$NEW_VERSION" '
-          $0 == "[[package]]" { in_package = 1; print; next }
-          in_package && /^name = "af"/ { found_af = 1; print; next }
-          in_package && found_af && /^version = / {
-            print "version = \"" new_version "\""
-            in_package = 0; found_af = 0
-            next
-          }
-          { print }
-        ' Cargo.lock > Cargo.lock.tmp && mv Cargo.lock.tmp Cargo.lock
+      run: .github/scripts/bump-cargo.bash
 
     - name: "Commit and tag new version"
       env:
         NEW_TAG: ${{ steps.next-version.outputs.new_tag }}
         GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
-      run: |
-        # Prepare --field flags for each changed file
-        files=()
-        for f in $(git status --porcelain | awk '{print $2}'); do
-          files+=(--field "files[][path]=$f")
-          files+=(--field "files[][contents]=$(base64 -w0 "$f")")
-        done
-
-        # Commit changes
-        new_sha="$(
-          gh api graphql \
-            --jq '.data.createCommitOnBranch.commit.oid' \
-            --field 'query=@.github/api/queries/createCommit.graphql' \
-            --field "githubRepository=$GITHUB_REPOSITORY" \
-            --field "branchName=$GITHUB_REF_NAME" \
-            --field "expectedHeadOid=$(git rev-parse HEAD)" \
-            --field "commitMessage=$NEW_TAG" \
-            "${files[@]}"
-        )"
-        
-        # Create a new tag
-        gh api graphql \
-          --field 'query=@.github/api/queries/createRef.graphql' \
-          --field "repoId=$(gh repo view "$GITHUB_REPOSITORY" --json id --jq .id)" \
-          --field "name=refs/tags/$NEW_TAG" \
-          --field "sha=$new_sha"
+      run: .github/scripts/commit-tag-version.bash
