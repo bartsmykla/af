@@ -1,4 +1,4 @@
-name: "Bump and Release New Version"
+name: "Bump and Build"
 
 on:
   workflow_dispatch: {}
@@ -7,7 +7,6 @@ permissions:
   contents: read
 
 env:
-  PROJECT_NAME: af
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -108,10 +107,10 @@ jobs:
         )" >> "$GITHUB_OUTPUT"
 
   #############################################################################
-  #                                   BUILD                                   #
+  #                              BUILD ARTIFACTS                              #
   #############################################################################
 
-  build:
+  build-artifacts:
     runs-on: ${{ matrix.runner }}
 
     needs:
@@ -153,7 +152,7 @@ jobs:
       id: add-suffix
       env:
         MATRIX_NAME: ${{ matrix.name }}
-        BASE_PATH: dist/${{ env.PROJECT_NAME }}
+        BASE_PATH: dist/${{ github.event.repository.name }}
       run: |
         final_path="$BASE_PATH-$MATRIX_NAME"
         echo "binary_path=$final_path" >> "$GITHUB_OUTPUT"
@@ -165,7 +164,7 @@ jobs:
       if: success()
       id: upload-artifacts
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ matrix.name }}
+        name: ${{ github.event.repository.name }}-${{ matrix.name }}
         path: ${{ steps.add-suffix.outputs.binary_path }}
         if-no-files-found: error
 
@@ -176,54 +175,3 @@ jobs:
       env:
         TUNSHELL_SECRET: ${{ secrets.TUNSHELL_SECRET }}
       run: .github/scripts/debug-shell.bash
-
-  #############################################################################
-  #                             UPLOAD ARTIFACTS                              #
-  #############################################################################
-
-  release:
-    runs-on: ubuntu-24.04
-
-    needs:
-    - bump-version
-    - build
-
-    permissions:
-      id-token: write # necessary for generating artifact attestations
-      attestations: write # necessary for generating artifact attestations
-
-    steps:
-    - name: "Get macos-arm64 binary"
-      id: binary-macos-arm64
-      uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-      with:
-        name: ${{ env.PROJECT_NAME }}-macos-arm64
-        path: dist
-
-    - name: "Get macos-amd64 binary"
-      id: binary-macos-amd64
-      uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-      with:
-        name: ${{ env.PROJECT_NAME }}-macos-amd64
-        path: dist
-
-    - name: "Generate artifacts attestation"
-      uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
-      with:
-        subject-path: dist/${{ env.PROJECT_NAME}}-*
-
-    - name: "Generate GitHub App Token"
-      id: github-app-token
-      uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
-      with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-    - name: "Add ${{ matrix.name }} artifacts to the release"
-      uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
-      with:
-        tag_name: ${{ needs.bump-version.outputs.new-tag }}
-        token: ${{ steps.github-app-token.outputs.token }}
-        files: dist/${{ env.PROJECT_NAME}}-*
-        make_latest: true
-        generate_release_notes: true
