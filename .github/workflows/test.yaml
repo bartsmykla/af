@@ -9,6 +9,8 @@ on:
     branches: ["master"]
     paths: ["src", "Cargo.*"]
 
+  merge_group: {}
+
   workflow_dispatch: {}
 
 permissions:
