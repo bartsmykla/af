@@ -2,12 +2,18 @@ name: "Tests"
 
 on:
   pull_request:
-    branches: ["master"]
-    paths: ["src", "Cargo.*"]
+    branches:
+    - "master"
+    paths:
+    - "src"
+    - "Cargo.*"
 
   push:
-    branches: ["master"]
-    paths: ["src", "Cargo.*"]
+    branches:
+    - "master"
+    paths:
+    - "src"
+    - "Cargo.*"
 
   merge_group: {}
 
