@@ -2,9 +2,13 @@ name: "Release"
 
 on:
   push:
-    tags: ["v*.*.*"]
+    tags:
+    - "v*.*.*"
 
 permissions: {}
+
+env:
+  WORKFLOW_TO_WATCH: trigger-bump.yaml
 
 jobs:
   release:
@@ -32,12 +36,11 @@ jobs:
     - name: "Get last bump version workflow run"
       id: get-last-workflow-run-id
       env:
-        WORKFLOW_BUMP_VERSION: bump-and-build.yaml
         GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
       run: |
         echo "id=$(
           gh run list \
-            --workflow "$WORKFLOW_BUMP_VERSION" \
+            --workflow "${{ env.WORKFLOW_TO_WATCH }}" \
             --limit 1 \
             --json databaseId \
             --jq '.[] | .databaseId'

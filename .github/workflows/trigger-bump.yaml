@@ -1,0 +1,56 @@
+name: "Trigger Bump"
+
+on:
+  schedule:
+  - cron: "0 1 * * *"
+
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+
+  ##############################################################################
+  #                            CHECK IF SHOULD BUMP                            #
+  ##############################################################################
+
+  check-if-should-bump:
+    runs-on: ubuntu-24.04
+
+    outputs:
+      bump: ${{ steps.should-bump.outputs.bump }}
+
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: "Generate GitHub App Token"
+      id: github-app-token
+      uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
+      with:
+        app-id: ${{ secrets.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+    - name: "Define if version should be bumped"
+      id: should-bump
+      env:
+        GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
+      run: |
+        last_tag="$(gh api repos/:owner/:repo/tags --paginate --jq '.[0].name')"
+        if ! git diff --quiet "$last_tag...HEAD" -- src Cargo.toml Cargo.lock; then
+          echo "bump=true" >> "$GITHUB_OUTPUT"
+        fi
+
+  ##############################################################################
+  #                               BUMP AND BUILD                               #
+  ##############################################################################
+
+  bump-and-build:
+    needs: check-if-should-bump
+    if: needs.check-if-should-bump.outputs.bump == 'true'
+    uses: ./.github/workflows/__bump-and-build.yaml
+    secrets: inherit
