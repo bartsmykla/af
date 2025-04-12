@@ -1,9 +1,15 @@
-[package]
-name = "af"
+[workspace]
+resolver = "3"
+members = ["xtasks/*"]
+
+[workspace.package]
 version = "0.1.14"
 edition = "2024"
+repository = "https://github.com/bartsmykla/af"
+license = "MIT"
 
-[dependencies]
+[workspace.dependencies]
+af = { path = ""}
 anyhow = "1.0.97"
 clap = { version = "4.5.31", features = ["derive", "env"] }
 clap-verbosity-flag = "3.0.2"
@@ -23,3 +29,40 @@ phf = { version = "0.11.3", features = ["macros"] }
 regex = "1.11.1"
 thiserror = "2.0.12"
 tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
+
+[package]
+name = "af"
+version = "0.1.14"
+edition = "2024"
+repository = "https://github.com/bartsmykla/af"
+license = "MIT"
+
+[lib]
+name = "af"
+path = "src/af/lib.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+clap-verbosity-flag.workspace = true
+clap_complete_command.workspace = true
+cli-clipboard.workspace = true
+clio.workspace = true
+console.workspace = true
+dialoguer.workspace = true
+fern.workspace = true
+git2.workspace = true
+humantime.workspace = true
+indicatif.workspace = true
+indicatif-log-bridge.workspace = true
+log.workspace = true
+octocrab.workspace = true
+phf.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[[bin]]
+name = "af"
+test = false
+doc = false

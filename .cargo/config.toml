@@ -1,0 +1,2 @@
+[alias]
+genman = "run --package genman --"
