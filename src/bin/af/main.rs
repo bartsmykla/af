@@ -1,73 +1,9 @@
 use std::time::SystemTime;
-use clap::{Args, CommandFactory, Parser, Subcommand};
+use clap::{CommandFactory, Parser};
 use fern::colors::{Color, ColoredLevelConfig};
 use indicatif::MultiProgress;
 use indicatif_log_bridge::LogWrapper;
-
-mod repo;
-mod ides;
-mod cmd;
-mod utils;
-
-#[derive(Debug, Parser)] // requires `derive` feature
-#[command(name = "af")]
-#[command(version, about = "The afrael CLI tool", long_about = None)]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-
-    #[command(flatten)]
-    verbose: clap_verbosity_flag::Verbosity,
-
-    #[arg(long, global = true)]
-    debug: bool,
-}
-
-#[derive(Debug, Subcommand)]
-enum Commands {
-    /// Generate shell completions
-    Completions {
-        /// The shell to generate the completions for
-        #[arg(value_enum)]
-        shell: clap_complete_command::Shell,
-    },
-
-    Git(GitArgs),
-
-    #[command(name = "pgc", hide = true, flatten_help = true)]
-    ProjectGitClone(cmd::git::clone_project::GitCloneProjectArgs),
-}
-
-#[derive(Debug, Args)]
-#[command(about = "Collection of helper subcommands for git", long_about = None)]
-struct GitArgs {
-    #[command(subcommand)]
-    command: Option<GitCommands>,
-}
-
-#[derive(Debug, Subcommand)]
-enum GitCommands {
-    #[command(visible_alias = "cp")]
-    CloneProject(cmd::git::clone_project::GitCloneProjectArgs),
-}
-
-// fn setup_logger() -> Result<(), fern::InitError> {
-//     fern::Dispatch::new()
-//         .format(|out, message, record| {
-//             out.finish(format_args!(
-//                 "[{} {} {}] {}",
-//                 humantime::format_rfc3339_seconds(SystemTime::now()),
-//                 record.level(),
-//                 record.target(),
-//                 message
-//             ))
-//         })
-//         .level(log::LevelFilter::Debug)
-//         .chain(std::io::stdout())
-//         .chain(fern::log_file("output.log")?)
-//         .apply()?;
-//     Ok(())
-// }
+use af::{Cli, Commands, GitCommands};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -126,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
 
     LogWrapper::new(multi.clone(), logger).try_init()?;
     log::set_max_level(level);
-
+    
     match cli.command {
         Commands::Completions { shell } => {
             shell.generate(&mut Cli::command(), &mut std::io::stdout())

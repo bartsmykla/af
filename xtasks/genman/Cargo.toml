@@ -1,0 +1,14 @@
+[package]
+name = "genman"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+af.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+clap_mangen = "0.2.26"
+
+[build-dependencies]

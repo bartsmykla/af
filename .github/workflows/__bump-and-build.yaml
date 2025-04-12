@@ -28,6 +28,9 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
+    - name: "Mise Install"
+      uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # v2.1.11
+
     - name: "Generate GitHub App Token"
       id: github-app-token
       uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
@@ -61,6 +64,10 @@ jobs:
       env:
         NEW_VERSION: ${{ steps.next-version.outputs.new_version }}
       run: .github/scripts/bump-cargo.bash
+
+    - name: "Regenerate Documentation"
+      run: |
+        mise run clean::gen::docs::markdown ::: gen::docs::markdown
 
     - name: "Commit and tag new version"
       env:

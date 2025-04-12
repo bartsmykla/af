@@ -1,0 +1,14 @@
+[package]
+name = "genmd"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+af.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+clap-markdown = "0.1.4"
+
+[build-dependencies]

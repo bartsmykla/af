@@ -1,5 +1,6 @@
 /target
 /.idea
-/tmp
 dist/
 .intentionally-empty-file.o
+/docs/man
+tmp
