@@ -35,7 +35,7 @@ run = "rm -rf docs/man"
 [tasks."clean::gen::docs"]
 description = "Clean generated documentation"
 depends = ["clean::gen::docs::**"]
-run = "rm -f docs"
+run = "rm -rf docs"
 
 [tasks."clean::gen"]
 description = "Clean everything generated"
