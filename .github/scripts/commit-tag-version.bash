@@ -8,12 +8,11 @@ common::check_env GITHUB_REPOSITORY
 common::check_env GITHUB_REF_NAME
 common::check_env NEW_TAG
 
-# Prepare --field flags for each changed file
 files=()
 while IFS= read -r f; do
   files+=(--field "files[][path]=$f")
   files+=(--field "files[][contents]=$(base64 -w0 "$f")")
-done < <(git status --porcelain | awk '{print $2}')
+done < <(git status --porcelain | awk '{print $2}' | xargs --no-run-if-empty -I{} find {} -type f 2>/dev/null)
 
 # Commit changes
 new_sha=$(
