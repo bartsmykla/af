@@ -1,0 +1,46 @@
+[tools]
+pandoc = "3.6.4"
+
+# Gen
+
+[tasks."gen::docs::markdown"]
+description = "Generate markdown documentation"
+run = """
+cargo genmd
+pandoc --from markdown --to gfm --wrap none --output docs/af.md docs/af.md
+"""
+
+[tasks."gen::docs::man"]
+description = "Generate manual page"
+run = "cargo genman"
+
+[tasks."gen::docs"]
+description = "Generate documentation"
+depends = ["gen::docs::**"]
+
+[tasks.gen]
+description = "Generate everything"
+depends = ["gen::**"]
+
+# Clean
+
+[tasks."clean::gen::docs::markdown"]
+description = "Clean generated markdown documentation"
+run = "rm -f docs/af.md"
+
+[tasks."clean::gen::docs::man"]
+description = "Clean generated manual page"
+run = "rm -rf docs/man"
+
+[tasks."clean::gen::docs"]
+description = "Clean generated documentation"
+depends = ["clean::gen::docs::**"]
+run = "rm -f docs"
+
+[tasks."clean::gen"]
+description = "Clean everything generated"
+depends = ["clean::gen::**"]
+
+[tasks.clean]
+description = "Clean everything"
+depends = ["clean::**"]

@@ -5,7 +5,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::{env, fs};
 
-const PATH_MAN_DEFAULT: &str = "/docs/man/man1";
+const PATH_MAN_DEFAULT: &str = "docs/man/man1";
 const PATH_MAN_ENV_VAR: &str = "OUT_PATH_MAN";
 
 fn main() -> anyhow::Result<()> {
