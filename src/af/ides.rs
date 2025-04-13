@@ -1,13 +1,15 @@
+use crate::consts::*;
+use phf::ordered_map::OrderedMap;
 use phf::phf_ordered_map;
 use std::collections::BTreeSet;
 
-static LANGS_IDES_MAP: phf::ordered_map::OrderedMap<&str, &str> = phf_ordered_map! {
-    "c" => "clion",
-    "c++" => "clion",
-    "go" => "goland",
-    "javascript" => "webstorm",
-    "ruby" => "rubymine",
-    "rust" => "rustrover",
+static LANGS_IDES_MAP: OrderedMap<&str, &str> = phf_ordered_map! {
+    "c" => CLION,
+    "c++" => CLION,
+    "go" => GOLAND,
+    "javascript" => WEBSTORM,
+    "ruby" => RUBYMINE,
+    "rust" => RUSTROVER,
 };
 
 pub fn get(language: &str) -> Option<&'static str> {
@@ -22,5 +24,5 @@ pub fn list() -> Vec<&'static str> {
 
 #[test]
 fn test_values() {
-    assert_eq!(list(), vec!["clion", "goland", "rubymine", "rustrover", "webstorm"]);
+    assert_eq!(list(), vec![CLION, GOLAND, RUBYMINE, RUSTROVER, WEBSTORM]);
 }

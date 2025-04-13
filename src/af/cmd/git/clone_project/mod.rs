@@ -1,47 +1,37 @@
-use anyhow::{anyhow, Result};
-use clap::{
-    Args,
-    ValueHint,
-    value_parser,
-};
+use crate::consts::*;
+use crate::repo::Repo;
+use crate::{ides, utils};
+use anyhow::{Result, anyhow};
+use clap::{Args, ValueHint, value_parser};
 use clio::ClioPath;
-use dialoguer::{
-    Confirm,
-    Input,
-    FuzzySelect,
-    theme::ColorfulTheme,
-};
+use console::style;
+use dialoguer::{Confirm, FuzzySelect, Input, theme::ColorfulTheme};
+use git2::build::RepoBuilder;
+use git2::{Cred, FetchOptions, RemoteCallbacks, Repository, StatusOptions};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::{debug, info, trace};
 use regex::Regex;
-use std::{env, fs};
 use std::time::Duration;
-use console::style;
-use git2::{Cred, FetchOptions, RemoteCallbacks, Repository, StatusOptions};
-use git2::build::RepoBuilder;
+use std::{env, fs};
 use thiserror::Error;
-use crate::{ides, utils};
-use crate::repo::Repo;
 
+/// Clone a project repository and optionally open it in an IDE
 #[derive(Debug, Args)]
-#[command(about = "Clone Project")]
+#[command()]
 pub struct GitCloneProjectArgs {
-    #[arg(
-        value_parser = parse_repository,
-    )]
+    /// The repository URL to clone (e.g. git@github.com:org/project.git)
+    #[arg(value_parser = parse_repository)]
     repository_url: Option<String>,
 
-    #[arg(
-        long,
-        default_value_t = true,
-        require_equals = true,
-        help = "Should open the repository in matching IDE (if found and available)"
-    )]
+    /// Open the cloned repository in a matching IDE if one is available
+    #[arg(long, default_value_t = true, require_equals = true)]
     open_ide: std::primitive::bool,
 
+    /// Force re-cloning even if the destination exists
     #[arg(long, short)]
     force: bool,
 
+    /// Root directory for placing the cloned project (uses $PROJECTS_PATH if set)
     #[arg(
         long,
         env = "PROJECTS_PATH",
@@ -51,12 +41,11 @@ pub struct GitCloneProjectArgs {
     )]
     root_directory: Option<ClioPath>,
 
-    #[arg(
-        long,
-        value_hint = ValueHint::DirPath
-    )]
+    /// Exact directory path to clone into (overrides root-directory)
+    #[arg(long, value_hint = ValueHint::DirPath)]
     directory: Option<ClioPath>,
 
+    /// Rename remote "origin" to "upstream" after cloning
     #[arg(long, default_value_t = true, require_equals = true)]
     rename_origin: std::primitive::bool,
 }
@@ -132,7 +121,7 @@ impl GitCloneProjectArgs {
 
         // Rename origin if required
         if self.rename_origin {
-            cloned_repo.remote_rename("origin", "upstream")?;
+            cloned_repo.remote_rename(ORIGIN, UPSTREAM)?;
         }
 
         // Open IDE if requested
@@ -148,7 +137,7 @@ impl GitCloneProjectArgs {
         }
 
         let re = Regex::new(r"application\.com\.jetbrains\.(\w+)(?:-.+)?(?:\.\d+)*")?;
-        let xpc_service_name = env::var("XPC_SERVICE_NAME").unwrap_or_default();
+        let xpc_service_name = env::var(XPC_SERVICE_NAME).unwrap_or_default();
 
         let ide = match repo.find_ide().await? {
             Some(ide) => Some(ide),
@@ -259,7 +248,7 @@ async fn clone_repository(
         ProgressStyle::with_template(
             "{msg:.green.bold} {spinner}[{elapsed_precise}] {wide_bar} {percent:>3}%",
         )?
-            .tick_strings(&["⢎  ", "⠎⠁ ", "⠊⠑ ", "⠈⠱ ", " ⡱ ", "⢀⡰ ", "⢄⡠ ", "⢆⡀ ", ""]),
+        .tick_strings(&["⢎  ", "⠎⠁ ", "⠊⠑ ", "⠈⠱ ", " ⡱ ", "⢀⡰ ", "⢄⡠ ", "⢆⡀ ", ""]),
     );
 
     let mut callbacks = RemoteCallbacks::new();
