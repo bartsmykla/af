@@ -10,9 +10,10 @@ pub mod ides;
 pub mod repo;
 pub mod utils;
 
+/// The afrael CLI tool
 #[derive(Debug, Parser)] // requires `derive` feature
 #[command(name = AF)]
-#[command(version, about = "The afrael CLI tool", long_about = None)]
+#[command(version)]
 pub struct Cli {
     /// Top-level command to run
     #[command(subcommand)]
