@@ -11,7 +11,7 @@ license = "MIT"
 [workspace.dependencies]
 af = { path = ""}
 anyhow = "1.0.97"
-clap = { version = "4.5.31", features = ["derive", "env"] }
+clap = { version = "4.5.31", features = ["derive", "env", "string"] }
 clap-verbosity-flag = "3.0.2"
 clap_complete_command = "0.6.1"
 cli-clipboard = "0.4.0"
