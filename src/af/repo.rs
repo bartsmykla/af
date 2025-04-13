@@ -1,9 +1,10 @@
-use regex::Regex;
-use anyhow::anyhow;
-use std::collections::BTreeMap;
-use log::debug;
+use crate::consts::*;
 use crate::ides;
 use crate::utils;
+use anyhow::anyhow;
+use log::debug;
+use regex::Regex;
+use std::collections::BTreeMap;
 
 #[derive(Debug)]
 pub struct Repo<'a> {
@@ -22,7 +23,7 @@ impl<'a> Repo<'a> {
             .ok_or_else(|| anyhow!("Invalid repository URL: {}", url))?;
 
         Ok(Self {
-            username: "git", // Hardcoded since it's always 'git'
+            username: GIT, // Hardcoded since it's always 'git'
             host: captures.get(1).unwrap().as_str(),
             org: captures.get(2).unwrap().as_str(),
             name: captures.get(3).unwrap().as_str(),
@@ -56,7 +57,7 @@ impl<'a> Repo<'a> {
             if let Some(ide) = ides::get(language) {
                 debug!("found IDE for language {ide}");
 
-                if utils::run_command("which", &[ide])?.status.success() {
+                if utils::run_command(WHICH, &[ide])?.status.success() {
                     return Ok(Some(ide));
                 }
 

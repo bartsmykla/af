@@ -1,9 +1,12 @@
-use std::time::SystemTime;
+use af::{Cli, Commands, DotCommands, cmd, consts::*, ides, utils};
+use anyhow::anyhow;
 use clap::{CommandFactory, Parser};
 use fern::colors::{Color, ColoredLevelConfig};
 use indicatif::MultiProgress;
 use indicatif_log_bridge::LogWrapper;
-use af::{Cli, Commands, GitCommands};
+use regex::Regex;
+use std::env;
+use std::time::SystemTime;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -62,18 +65,38 @@ async fn main() -> anyhow::Result<()> {
 
     LogWrapper::new(multi.clone(), logger).try_init()?;
     log::set_max_level(level);
-    
+
     match cli.command {
         Commands::Completions { shell } => {
             shell.generate(&mut Cli::command(), &mut std::io::stdout())
         }
 
-        Commands::ProjectGitClone(args) => args.run(&multi).await?,
+        Commands::Dot(dot) => match dot.command.unwrap_or(DotCommands::Ide(dot.ide)) {
+            DotCommands::Ide(args) => {
+                let re = Regex::new(r"application\.com\.jetbrains\.(\w+)(?:-.+)?(?:\.\d+)*")?;
+                let xpc_service_name = env::var(XPC_SERVICE_NAME).unwrap_or_default();
+                let ide = re
+                    .captures(&xpc_service_name)
+                    .map(|c| c.get(1).map_or("", |m| m.as_str()));
 
-        Commands::Git(git) => match git.command {
-            Some(GitCommands::CloneProject(args)) => args.run(&multi).await?,
-            None => {}
+                let ides = ides::list();
+
+                let index = ides
+                    .binary_search(&ide.unwrap_or(ides::get(GO).unwrap()))
+                    .map_err(|e| anyhow!("{:?}", e))?;
+
+                if let Some(p) = args.path {
+                    utils::run_command(ides[index], &[p.to_str().unwrap()])?;
+                }
+            }
         },
+
+        Commands::Git { command } => match command {
+            cmd::git::GitCommands::CloneProject(args) => args.run(&multi).await?,
+        },
+
+        // Aliases
+        Commands::ProjectGitClone(args) => args.run(&multi).await?,
     }
 
     Ok(())

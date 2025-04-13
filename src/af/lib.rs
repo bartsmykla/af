@@ -1,48 +1,88 @@
-use clap::{Args, Parser, Subcommand};
+use clap::value_parser;
+use clap::{Args, ValueHint};
+use clap::{Parser, Subcommand};
+use clio::ClioPath;
+use consts::*;
 
-pub mod repo;
-pub mod ides;
 pub mod cmd;
+pub mod consts;
+pub mod ides;
+pub mod repo;
 pub mod utils;
 
 #[derive(Debug, Parser)] // requires `derive` feature
-#[command(name = "af")]
+#[command(name = AF)]
 #[command(version, about = "The afrael CLI tool", long_about = None)]
 pub struct Cli {
+    /// Top-level command to run
     #[command(subcommand)]
     pub command: Commands,
 
+    /// Increase output verbosity (-v, -vv, -vvv, etc.)
     #[command(flatten)]
     pub verbose: clap_verbosity_flag::Verbosity,
 
+    /// Enable debug output
     #[arg(long, global = true)]
     pub debug: bool,
 }
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    /// Generate shell completions
+    /// Generate shell completion scripts
     Completions {
-        /// The shell to generate the completions for
+        /// Target shell to generate completions for
         #[arg(value_enum)]
         shell: clap_complete_command::Shell,
     },
 
-    Git(GitArgs),
+    /// Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
+    Dot(DotArgs),
 
-    #[command(name = "pgc", about = "Alias to `af git clone-project`")]
+    /// Git-related helper commands
+    #[command(visible_alias = "g")]
+    Git {
+        #[command(subcommand)]
+        command: cmd::git::GitCommands,
+    },
+
+    /// Shortcut for `af git clone-project`
+    #[command(name = "pgc")]
     ProjectGitClone(cmd::git::clone_project::GitCloneProjectArgs),
 }
 
 #[derive(Debug, Args)]
-#[command(about = "Collection of helper subcommands for git", long_about = None)]
-pub struct GitArgs {
+#[command(visible_alias = ".")]
+#[command(args_conflicts_with_subcommands = true)]
+#[command(flatten_help = true)]
+#[command(disable_help_subcommand = true)]
+pub struct DotArgs {
+    /// Optional dotfiles subcommand
     #[command(subcommand)]
-    pub command: Option<GitCommands>,
+    pub command: Option<DotCommands>,
+
+    /// IDE-related options (used when no subcommand is given)
+    #[command(flatten)]
+    pub ide: DotCommandsIdeArgs,
 }
 
 #[derive(Debug, Subcommand)]
-pub enum GitCommands {
-    #[command(visible_alias = "cp")]
-    CloneProject(cmd::git::clone_project::GitCloneProjectArgs),
+pub enum DotCommands {
+    /// Open the dotfiles directory in an IDE
+    ///
+    /// If inside a JetBrains IDE, it will use that IDE to open the path.
+    /// Otherwise, it tries to open in GoLand.
+    Ide(DotCommandsIdeArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct DotCommandsIdeArgs {
+    /// Path to the dotfiles directory (overrides $DOTFILES_PATH)
+    #[arg(
+        long,
+        env = "DOTFILES_PATH",
+        value_hint = ValueHint::DirPath,
+        value_parser = value_parser!(ClioPath).exists().is_dir(),
+    )]
+    pub path: Option<ClioPath>,
 }
