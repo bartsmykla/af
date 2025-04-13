@@ -4,13 +4,13 @@
   "extends": [
     "config:best-practices",
     ":gitSignOff",
-    ":label(dependencies)",
-    ":semanticCommitTypeAll(chore)"
+    ":label(dependencies)"
   ],
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true
   },
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}",
   "packageRules": [
     {
       "description": "Automerge non-major updates",
@@ -18,7 +18,8 @@
         "minor",
         "patch"
       ],
-      "automerge": true
+      "automerge": true,
+      "dependencyDashboardApproval": false
     }
   ]
 }
