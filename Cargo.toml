@@ -37,10 +37,6 @@ edition = "2024"
 repository = "https://github.com/bartsmykla/af"
 license = "MIT"
 
-[lib]
-name = "af"
-path = "src/af/lib.rs"
-
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
@@ -61,6 +57,10 @@ phf.workspace = true
 regex.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+
+[lib]
+name = "af"
+path = "src/af/lib.rs"
 
 [[bin]]
 name = "af"
