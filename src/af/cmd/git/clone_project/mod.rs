@@ -20,7 +20,7 @@ use thiserror::Error;
 #[command()]
 pub struct GitCloneProjectArgs {
     /// The repository URL to clone (e.g. git@github.com:org/project.git)
-    #[arg(value_parser = parse_repository)]
+    #[arg(value_parser = utils::parse_repository)]
     repository_url: Option<String>,
 
     /// Open the cloned repository in a matching IDE if one is available
@@ -48,6 +48,10 @@ pub struct GitCloneProjectArgs {
     /// Rename remote "origin" to "upstream" after cloning
     #[arg(long, default_value_t = true, require_equals = true)]
     rename_origin: std::primitive::bool,
+
+    /// If used URL is in HTTP(S) format, convert it to SSH format before cloning
+    #[arg(long, default_value_t = true, require_equals = true)]
+    convert_to_ssh: std::primitive::bool,
 }
 
 impl GitCloneProjectArgs {
@@ -55,21 +59,22 @@ impl GitCloneProjectArgs {
         trace!("Arguments: {:?}", self);
 
         let repository_url = match &self.repository_url {
-            Some(url) => url.clone(),
+            Some(url) => self.parse_repository(url)?,
             None => {
                 let theme = &ColorfulTheme::default();
 
                 let mut input = Input::with_theme(theme)
                     .with_prompt("Provide project's repository url you wish to clone")
-                    .validate_with(|a: &String| validate_repository(a));
+                    .validate_with(|a: &String| utils::validate_repository(a));
 
                 let clipboard = cli_clipboard::get_contents()
                     .unwrap_or_default()
                     .trim()
                     .to_string();
 
-                if validate_repository(&clipboard).is_ok() {
-                    input = input.default(clipboard);
+                if utils::validate_repository(&clipboard).is_ok() {
+                    info!("Using clipboard contents: {}", &clipboard);
+                    input = input.default(self.parse_repository(clipboard)?);
                 }
 
                 input.interact()?
@@ -166,11 +171,19 @@ impl GitCloneProjectArgs {
 
         Ok(())
     }
+
+    fn parse_repository<S: AsRef<str>>(&self, s: S) -> Result<String> {
+        if !self.convert_to_ssh {
+            return utils::parse_repository(s.as_ref());
+        }
+
+        utils::convert_to_ssh(s.as_ref())
+    }
 }
 
 #[derive(Error, Debug)]
 enum CloneRepositoryError {
-    #[error("Operation Cancelled")]
+    #[error("Operation Canceled")]
     OperationCancelled,
 }
 
@@ -196,21 +209,22 @@ async fn clone_repository(
                     utils::format_directory(directory)
                 );
 
-                let are_you_sure = format!(
-                    "{}{}{}",
-                    style("Are you ").yellow(),
-                    style(" REALLY ").bold().red().reverse(),
-                    style(" sure you want to continue and remove it?").yellow()
+                println!(
+                    "{} exists and is a Git repository with uncommitted changes",
+                    style(utils::format_directory(directory)).bold(),
                 );
 
-                let msg = format!(
-                    "{} exists and is a Git repository with uncommitted changes. {}",
-                    style(utils::format_directory(directory)).bold(),
-                    are_you_sure,
+                let are_you_sure = format!(
+                    "{} {} {}",
+                    style("Are you").yellow().bold(),
+                    style(" REALLY ").bold().red().reverse(),
+                    style("sure you want to continue and remove it?")
+                        .yellow()
+                        .bold()
                 );
 
                 let confirmed = Confirm::with_theme(&ColorfulTheme::default())
-                    .with_prompt(msg.as_str())
+                    .with_prompt(are_you_sure)
                     .interact()?;
 
                 if !confirmed {
@@ -290,22 +304,4 @@ async fn clone_repository(
     mp.remove(&pb);
 
     Ok(cloned_repo)
-}
-
-fn parse_repository(repository: &str) -> Result<String> {
-    let repository = repository.trim();
-    let re = Regex::new(r"^git@(.+):(.+)/(.+)\.git$")?;
-
-    re.captures(repository)
-        .map(|_| repository.to_string())
-        .ok_or_else(|| {
-            anyhow!(
-                "Unsupported repository URL. Supported format: {}",
-                style("git@<host>:<org>/<repo>.git").bold()
-            )
-        })
-}
-
-fn validate_repository(repository: &str) -> Result<()> {
-    parse_repository(repository).map(|_| ())
 }
