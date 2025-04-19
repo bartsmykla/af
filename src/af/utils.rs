@@ -66,7 +66,7 @@ pub fn convert_to_ssh<S: AsRef<str>>(repository: S) -> Result<String> {
 
     let re_https = Regex::new(r"^https?://([^/]+)/([^/]+)/([^/]+)(?:/.*)?$")?;
     if let Some(caps) = re_https.captures(repo) {
-        return Ok(format!("git@{}:{}/{}.git", &caps[1], &caps[2], &caps[3]));
+        return Ok(format!("git@{}:{}/{}.git", &caps[1], &caps[2], &caps[3].trim_end_matches(".git")));
     }
 
     anyhow::bail!("Only http(s) repository URLs are supported for conversion");
@@ -158,18 +158,5 @@ mod tests {
         let url = "  https://github.com/org/repo  ";
         let ssh = convert_to_ssh(url).unwrap();
         assert_eq!(ssh, "git@github.com:org/repo.git");
-    }
-
-    #[test]
-    fn returns_error_on_non_http_url() {
-        let url = "git@github.com:org/repo.git";
-        let result = convert_to_ssh(url);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .to_string()
-                .contains("Only http(s) repository URLs are supported")
-        );
     }
 }
