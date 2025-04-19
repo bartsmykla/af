@@ -109,6 +109,12 @@ Clone a project repository and optionally open it in an IDE
 
   Possible values: `true`, `false`
 
+- `--convert-to-ssh <CONVERT_TO_SSH>` — If used URL is in HTTP(S) format, convert it to SSH format before cloning
+
+  Default value: `true`
+
+  Possible values: `true`, `false`
+
 ## `af pgc`
 
 Shortcut for `af git clone-project`
@@ -134,6 +140,12 @@ Shortcut for `af git clone-project`
 - `--directory <DIRECTORY>` — Exact directory path to clone into (overrides root-directory)
 
 - `--rename-origin <RENAME_ORIGIN>` — Rename remote “origin” to “upstream” after cloning
+
+  Default value: `true`
+
+  Possible values: `true`, `false`
+
+- `--convert-to-ssh <CONVERT_TO_SSH>` — If used URL is in HTTP(S) format, convert it to SSH format before cloning
 
   Default value: `true`
 
