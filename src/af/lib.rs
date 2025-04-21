@@ -1,7 +1,7 @@
 use crate::consts::AF;
 use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand, command};
-use cmd::{dot::Dot, git::Git, git::clone_project::CloneProject};
+use cmd::{dot::DotCmd, git::Git, git::clone_project::CloneProject};
 use indicatif::MultiProgress;
 use log::LevelFilter;
 
@@ -54,7 +54,7 @@ pub enum Applet {
     /// Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
     Dot {
         #[command(flatten)]
-        dot: Dot,
+        dot: DotCmd,
 
         /// Increase output verbosity (-v, -vv, -vvv, etc.)
         #[command(flatten)]
