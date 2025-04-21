@@ -6,13 +6,11 @@ use clap::{Args, ValueHint, value_parser};
 use clio::ClioPath;
 use console::style;
 use dialoguer::{Confirm, FuzzySelect, Input, theme::ColorfulTheme};
-use git2::build::RepoBuilder;
-use git2::{Cred, FetchOptions, RemoteCallbacks, Repository, StatusOptions};
+use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository, StatusOptions};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::{debug, info, trace};
 use regex::Regex;
-use std::time::Duration;
-use std::{env, fs};
+use std::{env, fs, time::Duration};
 use thiserror::Error;
 
 /// Clone a project repository and optionally open it in an IDE
