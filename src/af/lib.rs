@@ -18,7 +18,6 @@ const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Warn;
 /// The afrael CLI tool
 #[derive(Debug, Parser)] // requires `derive` feature
 #[command(name = AF)]
-#[command(version)]
 #[command(multicall = true)]
 pub enum Cli {
     #[command(flatten)]
@@ -45,6 +44,7 @@ impl Cli {
 }
 
 #[derive(Debug, Subcommand)]
+#[command(version)]
 pub enum Applet {
     /// Generate shell completion scripts
     Completions {
@@ -54,6 +54,7 @@ pub enum Applet {
     },
 
     /// Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
+    #[command(version)]
     Dot {
         #[command(flatten)]
         dot: DotCmd,
@@ -76,6 +77,7 @@ pub enum Applet {
 
     /// Shortcut for `af git clone-project`
     #[command(name = "pgc")]
+    #[command(version)]
     ProjectGitClone {
         #[command(flatten)]
         clone_project: CloneProject,
@@ -87,6 +89,7 @@ pub enum Applet {
 
     /// Short aliases for common command combinations (e.g. gcmff)
     #[command(subcommand)]
+    #[command(version)]
     Shortcuts(Shortcut),
 }
 
