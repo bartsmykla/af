@@ -7,7 +7,9 @@ pandoc = "3.6.4"
 description = "Generate markdown documentation"
 run = """
 cargo genmd
-pandoc --from markdown --to gfm --wrap none --output docs/af.md docs/af.md
+for f in docs/*.md; do
+    pandoc --from markdown --to gfm --wrap none --output "$f" "$f"
+done
 """
 
 [tasks."gen::docs::man"]

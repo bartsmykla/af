@@ -1,3 +1,5 @@
+use fern::colors::Color;
+
 // Common
 pub const AF: &str = "af";
 
@@ -27,3 +29,15 @@ pub const GIT: &str = "git";
 // Git specific
 pub const ORIGIN: &str = "origin";
 pub const UPSTREAM: &str = "upstream";
+
+// Colors
+pub const GREY: Color = Color::TrueColor {
+    r: 107,
+    g: 107,
+    b: 107,
+};
+pub const MUTED_TEAL: Color = Color::TrueColor {
+    r: 117,
+    g: 195,
+    b: 170,
+};
