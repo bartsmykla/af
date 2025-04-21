@@ -11,6 +11,9 @@ This document contains the help content for the `af` command-line program.
 - [`af git`↴](#af-git)
 - [`af git clone-project`↴](#af-git-clone-project)
 - [`af pgc`↴](#af-pgc)
+- [`af shortcuts`↴](#af-shortcuts)
+- [`af shortcuts abbreviations`↴](#af-shortcuts-abbreviations)
+- [`af shortcuts abbreviations gcmff`↴](#af-shortcuts-abbreviations-gcmff)
 
 ## `af`
 
@@ -22,6 +25,7 @@ This document contains the help content for the `af` command-line program.
 - `dot` — Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
 - `git` — Git-related helper commands
 - `pgc` — Shortcut for `af git clone-project`
+- `shortcuts` — Short aliases for common command combinations (e.g. gcmff)
 
 ## `af completions`
 
@@ -153,3 +157,29 @@ Shortcut for `af git clone-project`
 - `-v`, `--verbose` — Increase logging verbosity
 
 - `-q`, `--quiet` — Decrease logging verbosity
+
+## `af shortcuts`
+
+Short aliases for common command combinations (e.g. gcmff)
+
+**Usage:** `af shortcuts <COMMAND>`
+
+###### **Subcommands:**
+
+- `abbreviations` — Group of abbreviation subcommands (alias: a, abbr, abbreviation)
+
+## `af shortcuts abbreviations`
+
+Group of abbreviation subcommands (alias: a, abbr, abbreviation)
+
+**Usage:** `af shortcuts abbreviations <COMMAND>`
+
+###### **Subcommands:**
+
+- `gcmff` — Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
+
+## `af shortcuts abbreviations gcmff`
+
+Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
+
+**Usage:** `af shortcuts abbreviations gcmff`
