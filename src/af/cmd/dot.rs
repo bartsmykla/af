@@ -11,7 +11,7 @@ use std::env;
 #[command(args_conflicts_with_subcommands = true)]
 #[command(flatten_help = true)]
 #[command(disable_help_subcommand = true)]
-pub struct Dot {
+pub struct DotCmd {
     /// Optional dotfiles subcommand
     #[command(subcommand)]
     pub command: Option<DotCommands>,
@@ -21,7 +21,7 @@ pub struct Dot {
     pub ide: Ide,
 }
 
-impl Dot {
+impl DotCmd {
     pub fn run(&self) -> Result<()> {
         match &self.command {
             Some(DotCommands::Ide(args)) => args.run(),
