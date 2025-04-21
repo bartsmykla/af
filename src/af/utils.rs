@@ -2,10 +2,13 @@ use crate::consts::*;
 use anyhow::{Context, Result};
 use clio::ClioPath;
 use console::style;
-use log::trace;
+use fern::Dispatch;
+use fern::colors::{Color, ColoredLevelConfig};
+use log::{LevelFilter, trace};
 use regex::Regex;
-use std::env;
 use std::process::{Command, Output};
+use std::time::SystemTime;
+use std::{env, io};
 
 pub fn run_command(command: &str, args: &[&str]) -> Result<Output> {
     let output = Command::new(command)
@@ -66,12 +69,41 @@ pub fn convert_to_ssh<S: AsRef<str>>(repository: S) -> Result<String> {
 
     let re_https = Regex::new(r"^https?://([^/]+)/([^/]+)/([^/]+)(?:/.*)?$")?;
     if let Some(caps) = re_https.captures(repo) {
-        return Ok(format!("git@{}:{}/{}.git", &caps[1], &caps[2], &caps[3].trim_end_matches(".git")));
+        return Ok(format!(
+            "git@{}:{}/{}.git",
+            &caps[1],
+            &caps[2],
+            &caps[3].trim_end_matches(".git")
+        ));
     }
 
     anyhow::bail!("Only http(s) repository URLs are supported for conversion");
 }
 
+pub fn setup_logger(level: LevelFilter) -> (LevelFilter, Box<dyn log::Log>) {
+    let colors = ColoredLevelConfig::new()
+        .error(Color::Red)
+        .warn(Color::Yellow)
+        .info(Color::Green)
+        .debug(Color::Blue)
+        .trace(MUTED_TEAL);
+
+    Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "{left_bracket}{timestamp} {level} {target}{right_bracket} {message}",
+                left_bracket = format_args!("\x1B[{}m[\x1B[0m", GREY.to_fg_str()),
+                timestamp = humantime::format_rfc3339_seconds(SystemTime::now()),
+                level = colors.color(record.level()),
+                target = record.target(),
+                right_bracket = format_args!("\x1B[{}m]\x1B[0m", GREY.to_fg_str()),
+                message = message
+            ))
+        })
+        .level(level)
+        .chain(io::stdout())
+        .into_log()
+}
 
 #[cfg(test)]
 mod tests {

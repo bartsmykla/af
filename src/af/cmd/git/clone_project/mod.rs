@@ -17,8 +17,7 @@ use thiserror::Error;
 
 /// Clone a project repository and optionally open it in an IDE
 #[derive(Debug, Args)]
-#[command()]
-pub struct GitCloneProjectArgs {
+pub struct CloneProject {
     /// The repository URL to clone (e.g. git@github.com:org/project.git)
     #[arg(value_parser = utils::parse_repository)]
     repository_url: Option<String>,
@@ -54,7 +53,7 @@ pub struct GitCloneProjectArgs {
     convert_to_ssh: std::primitive::bool,
 }
 
-impl GitCloneProjectArgs {
+impl CloneProject {
     pub async fn run(&self, multi_progress: &MultiProgress) -> Result<()> {
         trace!("Arguments: {:?}", self);
 
