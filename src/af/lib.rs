@@ -1,7 +1,9 @@
 use crate::consts::AF;
 use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand, command};
-use cmd::{dot::DotCmd, git::Git, git::clone_project::CloneProject};
+use cmd::{
+    dot::DotCmd, git::Git, git::clone_project::CloneProject, shortcuts::abbreviations::Shortcut,
+};
 use indicatif::MultiProgress;
 use log::LevelFilter;
 
@@ -82,6 +84,10 @@ pub enum Applet {
         #[command(flatten)]
         verbose: clap_verbosity_flag::Verbosity,
     },
+
+    /// Short aliases for common command combinations (e.g. gcmff)
+    #[command(subcommand)]
+    Shortcuts(Shortcut),
 }
 
 impl Applet {
@@ -90,6 +96,7 @@ impl Applet {
             Applet::Dot { verbose, .. } => verbose.log_level_filter(),
             Applet::Git { verbose, .. } => verbose.log_level_filter(),
             Applet::ProjectGitClone { verbose, .. } => verbose.log_level_filter(),
+            Applet::Shortcuts(_) => LevelFilter::Off,
             _ => DEFAULT_LOG_LEVEL,
         }
     }
@@ -104,6 +111,8 @@ impl Applet {
             Applet::Dot { dot, .. } => dot.run(),
 
             Applet::Git { git, .. } => git.run(&multi).await,
+
+            Applet::Shortcuts(shortcut) => shortcut.run(),
 
             Applet::ProjectGitClone { clone_project, .. } => clone_project.run(&multi).await,
         }
