@@ -14,9 +14,7 @@ This document contains the help content for the `af` command-line program.
 
 ## `af`
 
-The afrael CLI tool
-
-**Usage:** `af [OPTIONS] <COMMAND>`
+**Usage:** `af <COMMAND>`
 
 ###### **Subcommands:**
 
@@ -24,12 +22,6 @@ The afrael CLI tool
 - `dot` — Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
 - `git` — Git-related helper commands
 - `pgc` — Shortcut for `af git clone-project`
-
-###### **Options:**
-
-- `-v`, `--verbose` — Increase logging verbosity
-- `-q`, `--quiet` — Decrease logging verbosity
-- `--debug` — Enable debug output
 
 ## `af completions`
 
@@ -56,6 +48,8 @@ Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is u
 ###### **Options:**
 
 - `--path <PATH>` — Path to the dotfiles directory (overrides \$DOTFILES_PATH)
+- `-v`, `--verbose` — Increase logging verbosity
+- `-q`, `--quiet` — Decrease logging verbosity
 
 ## `af dot ide`
 
@@ -73,11 +67,16 @@ If inside a JetBrains IDE, it will use that IDE to open the path. Otherwise, it 
 
 Git-related helper commands
 
-**Usage:** `af git <COMMAND>`
+**Usage:** `af git [OPTIONS] <COMMAND>`
 
 ###### **Subcommands:**
 
 - `clone-project` — Clone a project repository and optionally open it in an IDE
+
+###### **Options:**
+
+- `-v`, `--verbose` — Increase logging verbosity
+- `-q`, `--quiet` — Decrease logging verbosity
 
 ## `af git clone-project`
 
@@ -150,3 +149,7 @@ Shortcut for `af git clone-project`
   Default value: `true`
 
   Possible values: `true`, `false`
+
+- `-v`, `--verbose` — Increase logging verbosity
+
+- `-q`, `--quiet` — Decrease logging verbosity
