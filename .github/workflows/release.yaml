@@ -52,7 +52,7 @@ jobs:
       run: gh run watch ${{ steps.get-last-workflow-run-id.outputs.id }} --exit-status
 
     - name: "Get artifacts"
-      uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
       with:
         github-token: ${{ steps.github-app-token.outputs.token }}
         run-id: ${{ steps.get-last-workflow-run-id.outputs.id }}
