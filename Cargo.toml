@@ -3,7 +3,7 @@ resolver = "3"
 members = ["xtasks/*"]
 
 [workspace.package]
-version = "0.5.0"
+version = "0.5.1"
 edition = "2024"
 repository = "https://github.com/bartsmykla/af"
 license = "MIT"
@@ -32,7 +32,7 @@ tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
 
 [package]
 name = "af"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2024"
 repository = "https://github.com/bartsmykla/af"
 license = "MIT"
