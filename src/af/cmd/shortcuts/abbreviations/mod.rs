@@ -13,10 +13,10 @@ const ORIGIN_UPSTREAM: &[&str] = &["origin", "upstream"];
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum GitPushRemote {
     #[default]
-    OriginFirst,
     Origin,
-    UpstreamFirst,
+    OriginFirst,
     Upstream,
+    UpstreamFirst,
 }
 
 impl IntoIterator for GitPushRemote {

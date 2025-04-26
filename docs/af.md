@@ -201,9 +201,9 @@ Expands to: git push <remote> <branch> \[optional flags\]
 
 - `-r`, `--remote <REMOTE_PRIORITY>` — Remote priority strategy when pushing (e.g., upstream first, origin first)
 
-  Default value: `origin-first`
+  Default value: `origin`
 
-  Possible values: `origin-first`, `origin`, `upstream-first`, `upstream`
+  Possible values: `origin`, `origin-first`, `upstream`, `upstream-first`
 
 - `-n`, `--no-verify` — Push with –no-verify flag (skip pre-push hooks)
 
