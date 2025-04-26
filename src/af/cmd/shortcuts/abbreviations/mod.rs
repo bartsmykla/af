@@ -1,6 +1,7 @@
 use anyhow::bail;
 use clap::Subcommand;
 use git2::Repository;
+use log::debug;
 
 const REMOTE_NAMES: [&str; 2] = ["upstream", "origin"];
 
@@ -12,27 +13,29 @@ pub enum Abbreviation {
 }
 
 impl Abbreviation {
-    pub fn run(&self) -> anyhow::Result<()> {
+    pub fn run(&self) {
         match self {
-            Abbreviation::GitCheckoutMasterFetchFastForward => {
-                let repo = Repository::open_from_env()?;
+            Abbreviation::GitCheckoutMasterFetchFastForward => match Repository::open_from_env() {
+                Ok(repo) => match get_remote_and_default_branch(&repo) {
+                    Ok((remote, default_branch)) => {
+                        let head = repo
+                            .head()
+                            .ok()
+                            .and_then(|h| h.shorthand().map(str::to_string))
+                            .unwrap_or_default();
 
-                let (remote, default_branch) = get_remote_and_default_branch(&repo)?;
+                        if head != default_branch {
+                            print!("git checkout {default_branch} && ");
+                        }
 
-                let head = repo
-                    .head()
-                    .ok()
-                    .and_then(|h| h.shorthand().map(str::to_string))
-                    .unwrap_or_default();
-
-                if head != default_branch {
-                    print!("git checkout {default_branch} && ");
-                }
-
-                print!("git fetch {remote} && git merge --ff-only {remote}/{default_branch}");
-
-                Ok(())
-            }
+                        print!(
+                            "git fetch {remote} && git merge --ff-only {remote}/{default_branch}"
+                        );
+                    }
+                    Err(err) => debug!("Failed to get remote and default branch: {err:#}"),
+                },
+                Err(err) => debug!("Failed to open repository from environment: {err:#}"),
+            },
         }
     }
 }
@@ -46,7 +49,7 @@ pub enum Shortcut {
 }
 
 impl Shortcut {
-    pub fn run(&self) -> anyhow::Result<()> {
+    pub fn run(&self) {
         match self {
             // Delegates to the selected abbreviation command
             Shortcut::Abbreviations(cmd) => cmd.run(),

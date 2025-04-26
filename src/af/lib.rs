@@ -115,7 +115,10 @@ impl Applet {
 
             Applet::Git { git, .. } => git.run(&multi).await,
 
-            Applet::Shortcuts(shortcut) => shortcut.run(),
+            Applet::Shortcuts(shortcut) => {
+                shortcut.run();
+                Ok(())
+            },
 
             Applet::ProjectGitClone { clone_project, .. } => clone_project.run(&multi).await,
         }
