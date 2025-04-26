@@ -88,9 +88,15 @@ pub enum Applet {
     },
 
     /// Short aliases for common command combinations (e.g. gcmff)
-    #[command(subcommand)]
     #[command(version)]
-    Shortcuts(Shortcut),
+    Shortcuts {
+        #[command(subcommand)]
+        shortcut: Shortcut,
+
+        /// Increase output verbosity (-v, -vv, -vvv, etc.)
+        #[command(flatten)]
+        verbose: clap_verbosity_flag::Verbosity,
+    },
 }
 
 impl Applet {
@@ -99,7 +105,7 @@ impl Applet {
             Applet::Dot { verbose, .. } => verbose.log_level_filter(),
             Applet::Git { verbose, .. } => verbose.log_level_filter(),
             Applet::ProjectGitClone { verbose, .. } => verbose.log_level_filter(),
-            Applet::Shortcuts(_) => LevelFilter::Off,
+            Applet::Shortcuts { verbose, .. } => verbose.log_level_filter(),
             _ => DEFAULT_LOG_LEVEL,
         }
     }
@@ -115,7 +121,7 @@ impl Applet {
 
             Applet::Git { git, .. } => git.run(&multi).await,
 
-            Applet::Shortcuts(shortcut) => {
+            Applet::Shortcuts { shortcut, .. } => {
                 shortcut.run();
                 Ok(())
             },

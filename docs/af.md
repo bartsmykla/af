@@ -14,6 +14,7 @@ This document contains the help content for the `af` command-line program.
 - [`af shortcuts`↴](#af-shortcuts)
 - [`af shortcuts abbreviations`↴](#af-shortcuts-abbreviations)
 - [`af shortcuts abbreviations gcmff`↴](#af-shortcuts-abbreviations-gcmff)
+- [`af shortcuts abbreviations gp`↴](#af-shortcuts-abbreviations-gp)
 
 ## `af`
 
@@ -162,11 +163,16 @@ Shortcut for `af git clone-project`
 
 Short aliases for common command combinations (e.g. gcmff)
 
-**Usage:** `af shortcuts <COMMAND>`
+**Usage:** `af shortcuts [OPTIONS] <COMMAND>`
 
 ###### **Subcommands:**
 
 - `abbreviations` — Group of abbreviation subcommands (alias: a, abbr, abbreviation)
+
+###### **Options:**
+
+- `-v`, `--verbose` — Increase logging verbosity
+- `-q`, `--quiet` — Decrease logging verbosity
 
 ## `af shortcuts abbreviations`
 
@@ -177,9 +183,30 @@ Group of abbreviation subcommands (alias: a, abbr, abbreviation)
 ###### **Subcommands:**
 
 - `gcmff` — Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
+- `gp` — Expands to: git push <remote> <branch> \[optional flags\]
 
 ## `af shortcuts abbreviations gcmff`
 
 Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
 
 **Usage:** `af shortcuts abbreviations gcmff`
+
+## `af shortcuts abbreviations gp`
+
+Expands to: git push <remote> <branch> \[optional flags\]
+
+**Usage:** `af shortcuts abbreviations gp [OPTIONS]`
+
+###### **Options:**
+
+- `-r`, `--remote <REMOTE_PRIORITY>` — Remote priority strategy when pushing (e.g., upstream first, origin first)
+
+  Default value: `origin-first`
+
+  Possible values: `origin-first`, `origin`, `upstream-first`, `upstream`
+
+- `-n`, `--no-verify` — Push with –no-verify flag (skip pre-push hooks)
+
+- `-f`, `--force-with-lease` — Push with –force-with-lease flag (safe force push)
+
+- `-F`, `--force` — Push with –force flag (unsafe force push, overrides remote)
