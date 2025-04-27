@@ -1,6 +1,7 @@
+use crate::consts::HEAD;
 use crate::consts::{
-    CHECKOUT, FETCH, FF_ONLY, FORCE, FORCE_WITH_LEASE, GIT, MERGE, NO_VERIFY, ORIGIN_SLICE,
-    ORIGIN_UPSTREAM_SLICE, PUSH, UPSTREAM_ORIGIN_SLICE, UPSTREAM_SLICE,
+    CHECKOUT, DIFF, FETCH, FF_ONLY, FORCE, FORCE_WITH_LEASE, GIT, MERGE, NO_VERIFY, ORIGIN_SLICE,
+    ORIGIN_UPSTREAM_SLICE, PBCOPY, PUSH, UPSTREAM_ORIGIN_SLICE, UPSTREAM_SLICE,
 };
 use anyhow::bail;
 use clap::{Subcommand, ValueEnum};
@@ -57,6 +58,22 @@ pub enum Abbreviation {
         #[arg(long, short = 'F', conflicts_with = "force_with_lease")]
         force: bool,
     },
+
+    /// Expands to: git diff <reference> -- <files> [optionally copy to clipboard]
+    #[command(name = "gd")]
+    GitDiff {
+        /// Specific files to diff (if omitted, diffs all changes)
+        #[arg(long, short)]
+        files: Option<Vec<String>>,
+
+        /// Git reference to diff against (e.g. HEAD)
+        #[arg(long, short)]
+        reference: Option<String>,
+
+        /// Copy the diff output to clipboard using pbcopy
+        #[arg(long, short)]
+        pbcopy: bool,
+    },
 }
 
 impl Abbreviation {
@@ -110,13 +127,40 @@ impl Abbreviation {
 
                             debug!("Branch name could not be determined");
                         }
-                        Ok(_) => debug!("HEAD is not pointing to a branch"),
-                        Err(err) => debug!("Failed to get HEAD: {err:#}"),
+                        Ok(_) => debug!("{HEAD} is not pointing to a branch"),
+                        Err(err) => debug!("Failed to get {HEAD}: {err:#}"),
                     },
                     Err(err) => debug!("Failed to get remote and default branch: {err:#}"),
                 },
                 Err(err) => debug!("Failed to open repository from environment: {err:#}"),
             },
+            Abbreviation::GitDiff {
+                files,
+                reference,
+                pbcopy,
+            } => {
+                if Repository::open_from_env().is_err() {
+                    debug!("Failed to open repository from environment");
+                    return;
+                }
+
+                let mut cmd = vec![GIT, DIFF];
+                
+                if let Some(ref_name) = reference {
+                    cmd.push(ref_name);
+                }
+                
+                if let Some(files) = files {
+                    cmd.push("--");
+                    cmd.extend(files.iter().map(String::as_str));
+                }
+
+                if *pbcopy {
+                    cmd.extend(vec!["|", PBCOPY]);
+                }
+
+                print!("{}", cmd.join(" "))
+            }
         }
     }
 }
@@ -154,7 +198,7 @@ where
         match repo.find_remote(remote_name) {
             Ok(_) => {
                 let clean_pattern = format!("{remote_name}/");
-                let revparse_spec = format!("{clean_pattern}HEAD");
+                let revparse_spec = format!("{clean_pattern}{HEAD}");
 
                 match repo.revparse_ext(&revparse_spec) {
                     Ok((_, Some(reference))) => {

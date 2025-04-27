@@ -15,6 +15,7 @@ This document contains the help content for the `af` command-line program.
 - [`af shortcuts abbreviations`↴](#af-shortcuts-abbreviations)
 - [`af shortcuts abbreviations gcmff`↴](#af-shortcuts-abbreviations-gcmff)
 - [`af shortcuts abbreviations gp`↴](#af-shortcuts-abbreviations-gp)
+- [`af shortcuts abbreviations gd`↴](#af-shortcuts-abbreviations-gd)
 
 ## `af`
 
@@ -184,6 +185,7 @@ Group of abbreviation subcommands (alias: a, abbr, abbreviation)
 
 - `gcmff` — Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
 - `gp` — Expands to: git push <remote> <branch> \[optional flags\]
+- `gd` — Expands to: git diff <reference> – <files> \[optionally copy to clipboard\]
 
 ## `af shortcuts abbreviations gcmff`
 
@@ -210,3 +212,15 @@ Expands to: git push <remote> <branch> \[optional flags\]
 - `-f`, `--force-with-lease` — Push with –force-with-lease flag (safe force push)
 
 - `-F`, `--force` — Push with –force flag (unsafe force push, overrides remote)
+
+## `af shortcuts abbreviations gd`
+
+Expands to: git diff <reference> – <files> \[optionally copy to clipboard\]
+
+**Usage:** `af shortcuts abbreviations gd [OPTIONS]`
+
+###### **Options:**
+
+- `-f`, `--files <FILES>` — Specific files to diff (if omitted, diffs all changes)
+- `-r`, `--reference <REFERENCE>` — Git reference to diff against (e.g. HEAD)
+- `-p`, `--pbcopy` — Copy the diff output to clipboard using pbcopy

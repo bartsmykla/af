@@ -25,8 +25,10 @@ pub const WEBSTORM: &str = "webstorm";
 // Commands
 pub const WHICH: &str = "which";
 pub const GIT: &str = "git";
+pub const PBCOPY: &str = "pbcopy";
 
 // Git specific
+pub const HEAD: &str = "HEAD";
 pub const ORIGIN: &str = "origin";
 pub const UPSTREAM: &str = "upstream";
 pub const ORIGIN_SLICE: &[&str] = &[ORIGIN];
@@ -37,6 +39,7 @@ pub const PUSH: &str = "push";
 pub const FETCH: &str = "fetch";
 pub const MERGE: &str = "merge";
 pub const CHECKOUT: &str = "checkout";
+pub const DIFF: &str = "diff";
 pub const NO_VERIFY: &str = "--no-verify";
 pub const FORCE_WITH_LEASE: &str = "--force-with-lease";
 pub const FF_ONLY: &str = "--ff-only";
