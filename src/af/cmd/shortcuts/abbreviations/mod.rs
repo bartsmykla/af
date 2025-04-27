@@ -1,14 +1,13 @@
+use crate::consts::{
+    CHECKOUT, FETCH, FF_ONLY, FORCE, FORCE_WITH_LEASE, GIT, MERGE, NO_VERIFY, ORIGIN_SLICE,
+    ORIGIN_UPSTREAM_SLICE, PUSH, UPSTREAM_ORIGIN_SLICE, UPSTREAM_SLICE,
+};
 use anyhow::bail;
 use clap::{Subcommand, ValueEnum};
 use git2::Repository;
 use log::debug;
 use std::fmt::Debug;
 use std::{iter, slice, vec};
-
-const ORIGIN: &[&str] = &["origin"];
-const UPSTREAM: &[&str] = &["upstream"];
-const UPSTREAM_ORIGIN: &[&str] = &["upstream", "origin"];
-const ORIGIN_UPSTREAM: &[&str] = &["origin", "upstream"];
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum GitPushRemote {
@@ -25,10 +24,10 @@ impl IntoIterator for GitPushRemote {
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
-            GitPushRemote::Upstream => UPSTREAM.iter().copied(),
-            GitPushRemote::UpstreamFirst => UPSTREAM_ORIGIN.iter().copied(),
-            GitPushRemote::Origin => ORIGIN.iter().copied(),
-            GitPushRemote::OriginFirst => ORIGIN_UPSTREAM.iter().copied(),
+            GitPushRemote::Upstream => UPSTREAM_SLICE.iter().copied(),
+            GitPushRemote::UpstreamFirst => UPSTREAM_ORIGIN_SLICE.iter().copied(),
+            GitPushRemote::Origin => ORIGIN_SLICE.iter().copied(),
+            GitPushRemote::OriginFirst => ORIGIN_UPSTREAM_SLICE.iter().copied(),
         }
     }
 }
@@ -64,7 +63,7 @@ impl Abbreviation {
     pub fn run(&self) {
         match self {
             Abbreviation::GitCheckoutMasterFetchFastForward => match Repository::open_from_env() {
-                Ok(repo) => match get_remote_and_default_branch(&repo, UPSTREAM_ORIGIN) {
+                Ok(repo) => match get_remote_and_default_branch(&repo, UPSTREAM_ORIGIN_SLICE) {
                     Ok((remote, default_branch)) => {
                         let head = repo
                             .head()
@@ -73,11 +72,11 @@ impl Abbreviation {
                             .unwrap_or_default();
 
                         if head != default_branch {
-                            print!("git checkout {default_branch} && ");
+                            print!("{GIT} {CHECKOUT} {default_branch} && ");
                         }
 
                         print!(
-                            "git fetch {remote} && git merge --ff-only {remote}/{default_branch}"
+                            "{GIT} {FETCH} {remote} && {GIT} {MERGE} {FF_ONLY} {remote}/{default_branch}"
                         );
                     }
                     Err(err) => debug!("Failed to get remote and default branch: {err:#}"),
@@ -94,16 +93,16 @@ impl Abbreviation {
                     Ok((remote, _)) => match repo.head() {
                         Ok(head) if head.is_branch() => {
                             if let Some(branch) = head.shorthand() {
-                                let mut cmd = vec!["git", "push", &remote, branch];
+                                let mut cmd = vec![GIT, PUSH, &remote, branch];
 
                                 if *no_verify {
-                                    cmd.push("--no-verify");
+                                    cmd.push(NO_VERIFY);
                                 }
 
                                 if *force_with_lease {
-                                    cmd.push("--force-with-lease");
+                                    cmd.push(FORCE_WITH_LEASE);
                                 } else if *force {
-                                    cmd.push("--force");
+                                    cmd.push(FORCE);
                                 }
 
                                 return print!("{}", cmd.join(" "));

@@ -29,6 +29,18 @@ pub const GIT: &str = "git";
 // Git specific
 pub const ORIGIN: &str = "origin";
 pub const UPSTREAM: &str = "upstream";
+pub const ORIGIN_SLICE: &[&str] = &[ORIGIN];
+pub const UPSTREAM_SLICE: &[&str] = &[UPSTREAM];
+pub const UPSTREAM_ORIGIN_SLICE: &[&str] = &[UPSTREAM, ORIGIN];
+pub const ORIGIN_UPSTREAM_SLICE: &[&str] = &[ORIGIN, UPSTREAM];
+pub const PUSH: &str = "push";
+pub const FETCH: &str = "fetch";
+pub const MERGE: &str = "merge";
+pub const CHECKOUT: &str = "checkout";
+pub const NO_VERIFY: &str = "--no-verify";
+pub const FORCE_WITH_LEASE: &str = "--force-with-lease";
+pub const FF_ONLY: &str = "--ff-only";
+pub const FORCE: &str = "--force";
 
 // Colors
 pub const GREY: Color = Color::TrueColor {
