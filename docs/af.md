@@ -16,6 +16,9 @@ This document contains the help content for the `af` command-line program.
 - [`af shortcuts abbreviations gcmff`↴](#af-shortcuts-abbreviations-gcmff)
 - [`af shortcuts abbreviations gp`↴](#af-shortcuts-abbreviations-gp)
 - [`af shortcuts abbreviations gd`↴](#af-shortcuts-abbreviations-gd)
+- [`af browser`↴](#af-browser)
+- [`af browser open`↴](#af-browser-open)
+- [`af browser find`↴](#af-browser-find)
 
 ## `af`
 
@@ -28,6 +31,7 @@ This document contains the help content for the `af` command-line program.
 - `git` — Git-related helper commands
 - `pgc` — Shortcut for `af git clone-project`
 - `shortcuts` — Short aliases for common command combinations (e.g. gcmff)
+- `browser` — Open and inspect installed browsers
 
 ## `af completions`
 
@@ -224,3 +228,61 @@ Expands to: git diff <reference> – <files> \[optionally copy to clipboard\]
 - `-f`, `--files <FILES>` — Specific files to diff (if omitted, diffs all changes)
 - `-r`, `--reference <REFERENCE>` — Git reference to diff against (e.g. HEAD)
 - `-p`, `--pbcopy` — Copy the diff output to clipboard using pbcopy
+
+## `af browser`
+
+Open and inspect installed browsers
+
+**Usage:** `af browser [OPTIONS] <COMMAND>`
+
+###### **Subcommands:**
+
+- `open` — Group of browser subcommands (alias: b)
+- `find` — Find installed browsers (alias: f)
+
+###### **Options:**
+
+- `-v`, `--verbose` — Increase logging verbosity
+- `-q`, `--quiet` — Decrease logging verbosity
+
+## `af browser open`
+
+Group of browser subcommands (alias: b)
+
+**Usage:** `af browser open [OPTIONS] <URL>`
+
+###### **Arguments:**
+
+- `<URL>` — The URL to open (must be a valid absolute URL)
+
+###### **Options:**
+
+- `--new-tab <NEW_TAB>` — Open each URL in a new tab (default: true)
+
+  Default value: `true`
+
+  Possible values: `true`, `false`
+
+- `-b`, `--browser <BROWSER>` — Browser to use for opening the URL
+
+  Default value: `firefox`
+
+  Possible values: `brave`, `chrome`, `edge`, `firefox`, `opera`
+
+## `af browser find`
+
+Find installed browsers (alias: f)
+
+**Usage:** `af browser find [OPTIONS]`
+
+###### **Options:**
+
+- `-k`, `--kind <BROWSER>` — Filter results by browser kinds (comma-separated)
+
+  Default values: `brave`, `chrome`, `edge`, `firefox`, `opera`
+
+  Possible values: `brave`, `chrome`, `edge`, `firefox`, `opera`
+
+- `-a`, `--all` — Show all matching results (not just the first one per kind)
+
+- `-p`, `--path` — Display only the full paths to executables

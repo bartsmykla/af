@@ -1,17 +1,19 @@
-use crate::consts::AF;
-use anyhow::Result;
-use clap::{CommandFactory, Parser, Subcommand, command};
-use cmd::{
-    dot::DotCmd, git::Git, git::clone_project::CloneProject, shortcuts::abbreviations::Shortcut,
-};
-use indicatif::MultiProgress;
-use log::LevelFilter;
-
 pub mod cmd;
 pub mod consts;
 pub mod ides;
 pub mod repo;
 pub mod utils;
+
+use crate::cmd::{
+    browser::Browser, dot::DotCmd, git::Git, git::clone_project::CloneProject,
+    shortcuts::abbreviations::Shortcut,
+};
+use crate::consts::AF;
+
+use anyhow::Result;
+use clap::{CommandFactory, Parser, Subcommand, command};
+use indicatif::MultiProgress;
+use log::LevelFilter;
 
 const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Warn;
 
@@ -56,6 +58,7 @@ pub enum Applet {
     /// Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is used)
     #[command(version)]
     Dot {
+        /// Dotfile-related subcommands
         #[command(flatten)]
         dot: DotCmd,
 
@@ -67,6 +70,7 @@ pub enum Applet {
     /// Git-related helper commands
     #[command(visible_alias = "g")]
     Git {
+        /// Git subcommands
         #[command(subcommand)]
         git: Git,
 
@@ -79,6 +83,7 @@ pub enum Applet {
     #[command(name = "pgc")]
     #[command(version)]
     ProjectGitClone {
+        /// Clone project arguments
         #[command(flatten)]
         clone_project: CloneProject,
 
@@ -90,8 +95,21 @@ pub enum Applet {
     /// Short aliases for common command combinations (e.g. gcmff)
     #[command(version)]
     Shortcuts {
+        /// Abbreviated/shortcut commands
         #[command(subcommand)]
         shortcut: Shortcut,
+
+        /// Increase output verbosity (-v, -vv, -vvv, etc.)
+        #[command(flatten)]
+        verbose: clap_verbosity_flag::Verbosity,
+    },
+
+    /// Open and inspect installed browsers
+    #[command(version)]
+    Browser {
+        /// Browser-related subcommands
+        #[command(subcommand)]
+        browser: Browser,
 
         /// Increase output verbosity (-v, -vv, -vvv, etc.)
         #[command(flatten)]
@@ -106,7 +124,8 @@ impl Applet {
             Applet::Git { verbose, .. } => verbose.log_level_filter(),
             Applet::ProjectGitClone { verbose, .. } => verbose.log_level_filter(),
             Applet::Shortcuts { verbose, .. } => verbose.log_level_filter(),
-            _ => DEFAULT_LOG_LEVEL,
+            Applet::Browser { verbose, .. } => verbose.log_level_filter(),
+            Applet::Completions { .. } => DEFAULT_LOG_LEVEL,
         }
     }
 
@@ -124,9 +143,11 @@ impl Applet {
             Applet::Shortcuts { shortcut, .. } => {
                 shortcut.run();
                 Ok(())
-            },
+            }
 
             Applet::ProjectGitClone { clone_project, .. } => clone_project.run(&multi).await,
+
+            Applet::Browser { browser, .. } => browser.run(),
         }
     }
 }
