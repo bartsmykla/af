@@ -6,6 +6,7 @@ pub const AF: &str = "af";
 // Env vars
 pub const XPC_SERVICE_NAME: &str = "XPC_SERVICE_NAME";
 pub const HOME: &str = "HOME";
+pub const HOMEBREW_PREFIX: &str = "HOMEBREW_PREFIX";
 
 // Languages
 pub const C: &str = "c";
@@ -26,6 +27,13 @@ pub const WEBSTORM: &str = "webstorm";
 pub const WHICH: &str = "which";
 pub const GIT: &str = "git";
 pub const PBCOPY: &str = "pbcopy";
+pub const BREW: &str = "brew";
+
+// Flags
+pub const FLAG_VERSION: &str = "--version";
+pub const FLAG_PREFIX: &str = "--prefix";
+pub const FLAG_URL: &str = "--url";
+pub const FLAG_NEW_TAB: &str = "--new-tab";
 
 // Git specific
 pub const HEAD: &str = "HEAD";
@@ -56,3 +64,6 @@ pub const MUTED_TEAL: Color = Color::TrueColor {
     g: 195,
     b: 170,
 };
+
+// Misc
+pub const DEFAULT_HOMEBREW_PREFIX: &str = "/opt/homebrew";

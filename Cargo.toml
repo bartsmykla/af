@@ -20,15 +20,18 @@ console = "0.15.11"
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 fern = { version = "0.7.1", features = ["colored"] }
 git2 = "0.20.0"
+glob = "0.3.2"
 humantime = "2.1.0"
 indicatif = "0.17.11"
 indicatif-log-bridge = "0.2.3"
 log = "0.4.26"
 octocrab = "0.44.0"
 phf = { version = "0.11.3", features = ["macros"] }
+rayon = "1.10.0"
 regex = "1.11.1"
 thiserror = "2.0.12"
 tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
+url = "2.5.4"
 
 [package]
 name = "af"
@@ -48,15 +51,18 @@ console.workspace = true
 dialoguer.workspace = true
 fern.workspace = true
 git2.workspace = true
+glob.workspace = true
 humantime.workspace = true
 indicatif.workspace = true
 indicatif-log-bridge.workspace = true
 log.workspace = true
 octocrab.workspace = true
 phf.workspace = true
+rayon.workspace = true
 regex.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+url.workspace = true
 
 [lib]
 name = "af"
