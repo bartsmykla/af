@@ -51,6 +51,8 @@ Helper commands related to dotfiles (defaults to `dot ide` if no subcommand is u
 
 **Usage:** `af dot [OPTIONS]        dot ide [OPTIONS]`
 
+**Command Alias:** `.`
+
 ###### **Subcommands:**
 
 - `ide` — Open the dotfiles directory in an IDE
@@ -79,6 +81,8 @@ Git-related helper commands
 
 **Usage:** `af git [OPTIONS] <COMMAND>`
 
+**Command Alias:** `g`
+
 ###### **Subcommands:**
 
 - `clone-project` — Clone a project repository and optionally open it in an IDE
@@ -93,6 +97,8 @@ Git-related helper commands
 Clone a project repository and optionally open it in an IDE
 
 **Usage:** `af git clone-project [OPTIONS] [REPOSITORY_URL]`
+
+**Command Alias:** `cp`
 
 ###### **Arguments:**
 
@@ -185,6 +191,8 @@ Group of abbreviation subcommands (alias: a, abbr, abbreviation)
 
 **Usage:** `af shortcuts abbreviations <COMMAND>`
 
+**Command Aliases:** `a`, `abbr`, `abbreviation`
+
 ###### **Subcommands:**
 
 - `gcmff` — Expands to: git checkout <default-branch> && git fetch <remote> && git merge –ff-only <remote>/<default-branch>
@@ -251,6 +259,8 @@ Group of browser subcommands (alias: b)
 
 **Usage:** `af browser open [OPTIONS] <URL>`
 
+**Command Alias:** `o`
+
 ###### **Arguments:**
 
 - `<URL>` — The URL to open (must be a valid absolute URL)
@@ -274,6 +284,8 @@ Group of browser subcommands (alias: b)
 Find installed browsers (alias: f)
 
 **Usage:** `af browser find [OPTIONS]`
+
+**Command Alias:** `f`
 
 ###### **Options:**
 
