@@ -26,7 +26,7 @@ indicatif = "0.17.11"
 indicatif-log-bridge = "0.2.3"
 log = "0.4.26"
 octocrab = "0.44.0"
-phf = { version = "0.11.3", features = ["macros"] }
+phf = { version = "0.12.0", features = ["macros"] }
 rayon = "1.10.0"
 regex = "1.11.1"
 thiserror = "2.0.12"
