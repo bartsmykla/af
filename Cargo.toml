@@ -22,7 +22,7 @@ fern = { version = "0.7.1", features = ["colored"] }
 git2 = "0.20.0"
 glob = "0.3.2"
 humantime = "2.1.0"
-indicatif = "0.17.11"
+indicatif = "0.18.0"
 indicatif-log-bridge = "0.2.3"
 log = "0.4.26"
 octocrab = "0.44.0"
