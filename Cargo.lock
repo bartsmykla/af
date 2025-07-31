@@ -19,7 +19,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "af"
-version = "0.7.24"
+version = "0.7.25"
 dependencies = [
  "anyhow",
  "clap",
@@ -680,7 +680,7 @@ dependencies = [
 
 [[package]]
 name = "genman"
-version = "0.7.24"
+version = "0.7.25"
 dependencies = [
  "af",
  "anyhow",
@@ -690,7 +690,7 @@ dependencies = [
 
 [[package]]
 name = "genmd"
-version = "0.7.24"
+version = "0.7.25"
 dependencies = [
  "af",
  "anyhow",
