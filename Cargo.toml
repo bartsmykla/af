@@ -25,7 +25,7 @@ humantime = "2.1.0"
 indicatif = "0.18.0"
 indicatif-log-bridge = "0.2.3"
 log = "0.4.26"
-octocrab = "0.45.0"
+octocrab = "0.46.0"
 phf = { version = "0.13.0", features = ["macros"] }
 rayon = "1.10.0"
 regex = "1.11.1"
