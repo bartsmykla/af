@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "af"
-version = "0.7.57"
+version = "0.7.58"
 dependencies = [
  "anyhow",
  "clap",
@@ -642,7 +642,7 @@ dependencies = [
 
 [[package]]
 name = "genman"
-version = "0.7.57"
+version = "0.7.58"
 dependencies = [
  "af",
  "anyhow",
@@ -652,7 +652,7 @@ dependencies = [
 
 [[package]]
 name = "genmd"
-version = "0.7.57"
+version = "0.7.58"
 dependencies = [
  "af",
  "anyhow",
