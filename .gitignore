@@ -4,3 +4,4 @@ dist/
 .intentionally-empty-file.o
 /docs/man
 tmp
+af-alfred-workflow/workflow/af-alfred-workflow
