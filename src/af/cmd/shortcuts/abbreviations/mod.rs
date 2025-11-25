@@ -240,7 +240,7 @@ mod tests {
     fn commit(repo: &Repository, msg: &str) -> git2::Oid {
         let tree_id = repo.index().unwrap().write_tree().unwrap();
         let tree = repo.find_tree(tree_id).unwrap();
-        let signature = repo.signature().unwrap();
+        let signature = git2::Signature::now("Test User", "test@example.com").unwrap();
         
         let parent_commit = match repo.head() {
              Ok(head) => vec![repo.find_commit(head.target().unwrap()).unwrap()],
