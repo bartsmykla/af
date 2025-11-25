@@ -106,32 +106,39 @@ impl Abbreviation {
                 force_with_lease,
                 force,
             } => match Repository::open_from_env() {
-                Ok(repo) => match get_remote_and_default_branch(&repo, *remote_priority) {
-                    Ok((remote, _)) => match repo.head() {
-                        Ok(head) if head.is_branch() => {
-                            if let Some(branch) = head.shorthand() {
-                                let mut cmd = vec![GIT, PUSH, &remote, branch];
+                Ok(repo) => {
+                    let found_remote = remote_priority
+                        .into_iter()
+                        .find(|name| repo.find_remote(name).is_ok());
 
-                                if *no_verify {
-                                    cmd.push(NO_VERIFY);
+                    if let Some(remote) = found_remote {
+                        match repo.head() {
+                            Ok(head) if head.is_branch() => {
+                                if let Some(branch) = head.shorthand() {
+                                    let mut cmd = vec![GIT, PUSH, remote, branch];
+
+                                    if *no_verify {
+                                        cmd.push(NO_VERIFY);
+                                    }
+
+                                    if *force_with_lease {
+                                        cmd.push(FORCE_WITH_LEASE);
+                                    } else if *force {
+                                        cmd.push(FORCE);
+                                    }
+
+                                    return print!("{}", cmd.join(" "));
                                 }
 
-                                if *force_with_lease {
-                                    cmd.push(FORCE_WITH_LEASE);
-                                } else if *force {
-                                    cmd.push(FORCE);
-                                }
-
-                                return print!("{}", cmd.join(" "));
+                                debug!("Branch name could not be determined");
                             }
-
-                            debug!("Branch name could not be determined");
+                            Ok(_) => debug!("{HEAD} is not pointing to a branch"),
+                            Err(err) => debug!("Failed to get {HEAD}: {err:#}"),
                         }
-                        Ok(_) => debug!("{HEAD} is not pointing to a branch"),
-                        Err(err) => debug!("Failed to get {HEAD}: {err:#}"),
-                    },
-                    Err(err) => debug!("Failed to get remote and default branch: {err:#}"),
-                },
+                    } else {
+                        debug!("No valid remote found from priority list");
+                    }
+                }
                 Err(err) => debug!("Failed to open repository from environment: {err:#}"),
             },
             Abbreviation::GitDiff {
