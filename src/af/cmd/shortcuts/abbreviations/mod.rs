@@ -107,15 +107,13 @@ impl Abbreviation {
                 force,
             } => match Repository::open_from_env() {
                 Ok(repo) => {
-                    let found_remote = remote_priority
-                        .into_iter()
-                        .find(|name| repo.find_remote(name).is_ok());
+                    let found_remote = get_existing_remote(&repo, *remote_priority);
 
                     if let Some(remote) = found_remote {
                         match repo.head() {
                             Ok(head) if head.is_branch() => {
                                 if let Some(branch) = head.shorthand() {
-                                    let mut cmd = vec![GIT, PUSH, remote, branch];
+                                    let mut cmd = vec![GIT, PUSH, &remote, branch];
 
                                     if *no_verify {
                                         cmd.push(NO_VERIFY);
@@ -187,6 +185,18 @@ impl Shortcut {
             Shortcut::Abbreviations(cmd) => cmd.run(),
         }
     }
+}
+
+/// Iterates over the provided remote names and returns the first one that exists in the repository.
+fn get_existing_remote<I, S>(repo: &Repository, remote_names: I) -> Option<String>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    remote_names
+        .into_iter()
+        .find(|name| repo.find_remote(name.as_ref()).is_ok())
+        .map(|s| s.as_ref().to_string())
 }
 
 /// Returns the first found remote (from provided list) and its default branch name
@@ -356,6 +366,33 @@ mod tests {
         let result = get_remote_and_default_branch(&local_repo, ["origin"]);
         assert!(result.is_err());
         
+        drop(local_td);
+        drop(remote_td);
+    }
+
+    #[test]
+    fn test_gp_finds_remote_without_head_or_branches() {
+        let (remote_td, _remote_repo) = init_repo();
+        let (local_td, local_repo) = init_repo();
+
+        // Add "upstream" remote, but no branches fetched, no HEAD.
+        // Just the config entry exists.
+        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+        
+        // Create 'origin' as well to simulate priority checking
+        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
+
+        // Case 1: Upstream first priority
+        let priority = GitPushRemote::UpstreamFirst;
+        // Should find "upstream" even though it has no branches
+        let remote = get_existing_remote(&local_repo, priority).unwrap();
+        assert_eq!(remote, "upstream");
+
+        // Case 2: Origin first priority
+        let priority = GitPushRemote::OriginFirst;
+        let remote = get_existing_remote(&local_repo, priority).unwrap();
+        assert_eq!(remote, "origin");
+
         drop(local_td);
         drop(remote_td);
     }
