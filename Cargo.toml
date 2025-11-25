@@ -72,3 +72,6 @@ path = "src/af/lib.rs"
 name = "af"
 test = false
 doc = false
+
+[dev-dependencies]
+tempfile = "3.23.0"

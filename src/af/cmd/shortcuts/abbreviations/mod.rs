@@ -106,32 +106,37 @@ impl Abbreviation {
                 force_with_lease,
                 force,
             } => match Repository::open_from_env() {
-                Ok(repo) => match get_remote_and_default_branch(&repo, *remote_priority) {
-                    Ok((remote, _)) => match repo.head() {
-                        Ok(head) if head.is_branch() => {
-                            if let Some(branch) = head.shorthand() {
-                                let mut cmd = vec![GIT, PUSH, &remote, branch];
+                Ok(repo) => {
+                    let found_remote = get_existing_remote(&repo, *remote_priority);
 
-                                if *no_verify {
-                                    cmd.push(NO_VERIFY);
+                    if let Some(remote) = found_remote {
+                        match repo.head() {
+                            Ok(head) if head.is_branch() => {
+                                if let Some(branch) = head.shorthand() {
+                                    let mut cmd = vec![GIT, PUSH, &remote, branch];
+
+                                    if *no_verify {
+                                        cmd.push(NO_VERIFY);
+                                    }
+
+                                    if *force_with_lease {
+                                        cmd.push(FORCE_WITH_LEASE);
+                                    } else if *force {
+                                        cmd.push(FORCE);
+                                    }
+
+                                    return print!("{}", cmd.join(" "));
                                 }
 
-                                if *force_with_lease {
-                                    cmd.push(FORCE_WITH_LEASE);
-                                } else if *force {
-                                    cmd.push(FORCE);
-                                }
-
-                                return print!("{}", cmd.join(" "));
+                                debug!("Branch name could not be determined");
                             }
-
-                            debug!("Branch name could not be determined");
+                            Ok(_) => debug!("{HEAD} is not pointing to a branch"),
+                            Err(err) => debug!("Failed to get {HEAD}: {err:#}"),
                         }
-                        Ok(_) => debug!("{HEAD} is not pointing to a branch"),
-                        Err(err) => debug!("Failed to get {HEAD}: {err:#}"),
-                    },
-                    Err(err) => debug!("Failed to get remote and default branch: {err:#}"),
-                },
+                    } else {
+                        debug!("No valid remote found from priority list");
+                    }
+                }
                 Err(err) => debug!("Failed to open repository from environment: {err:#}"),
             },
             Abbreviation::GitDiff {
@@ -182,6 +187,18 @@ impl Shortcut {
     }
 }
 
+/// Iterates over the provided remote names and returns the first one that exists in the repository.
+fn get_existing_remote<I, S>(repo: &Repository, remote_names: I) -> Option<String>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    remote_names
+        .into_iter()
+        .find(|name| repo.find_remote(name.as_ref()).is_ok())
+        .map(|s| s.as_ref().to_string())
+}
+
 /// Returns the first found remote (from provided list) and its default branch name
 fn get_remote_and_default_branch<I, S>(
     repo: &Repository,
@@ -195,29 +212,188 @@ where
         let remote_name = remote_name.as_ref();
         debug!("Trying remote: {remote_name:?}");
 
-        match repo.find_remote(remote_name) {
-            Ok(_) => {
-                let clean_pattern = format!("{remote_name}/");
-                let revparse_spec = format!("{clean_pattern}{HEAD}");
+        if repo.find_remote(remote_name).is_ok() {
+            let clean_pattern = format!("{remote_name}/");
+            let head_spec = format!("{clean_pattern}{HEAD}");
 
-                match repo.revparse_ext(&revparse_spec) {
-                    Ok((_, Some(reference))) => {
-                        if let Some(ref_short) = reference.shorthand() {
-                            return Ok((
-                                remote_name.to_string(),
-                                ref_short.replace(&clean_pattern, ""),
-                            ));
-                        }
-
-                        debug!("Reference shorthand is None for remote {remote_name:?}");
-                    }
-                    Ok((_, None)) => debug!("No reference found for spec {revparse_spec}"),
-                    Err(err) => debug!("Failed to rev-parse {revparse_spec}: {err:#}"),
+            // Try HEAD first
+            if let Ok((_, Some(reference))) = repo.revparse_ext(&head_spec) {
+                if let Some(ref_short) = reference.shorthand() {
+                    return Ok((
+                        remote_name.to_string(),
+                        ref_short.replace(&clean_pattern, ""),
+                    ));
                 }
             }
-            Err(err) => debug!("Remote {remote_name:?} not found: {err:#}"),
+
+            // Fallback: check for "main" and "master" branches
+            for branch in ["main", "master"] {
+                let branch_spec = format!("{clean_pattern}{branch}");
+                if repo.revparse_single(&branch_spec).is_ok() {
+                    return Ok((remote_name.to_string(), branch.to_string()));
+                }
+            }
+
+            debug!("No default branch found for remote {remote_name:?}");
+        } else {
+            debug!("Remote {remote_name:?} not found");
         }
     }
 
     bail!("Could not find remote and default branch")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn init_repo() -> (TempDir, Repository) {
+        let temp_dir = TempDir::new().unwrap();
+        let repo = Repository::init(temp_dir.path()).unwrap();
+        (temp_dir, repo)
+    }
+
+    fn commit(repo: &Repository, msg: &str) -> git2::Oid {
+        let tree_id = repo.index().unwrap().write_tree().unwrap();
+        let tree = repo.find_tree(tree_id).unwrap();
+        let signature = git2::Signature::now("Test User", "test@example.com").unwrap();
+        
+        let parent_commit = match repo.head() {
+             Ok(head) => vec![repo.find_commit(head.target().unwrap()).unwrap()],
+             Err(_) => vec![],
+        };
+        let parents: Vec<&git2::Commit> = parent_commit.iter().collect();
+
+        repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            msg,
+            &tree,
+            &parents,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn test_finds_existing_remote_head() {
+        let (remote_td, remote_repo) = init_repo();
+        // Create a commit on remote so it has a HEAD
+        commit(&remote_repo, "Initial commit");
+        
+        let (local_td, local_repo) = init_repo();
+        
+        // Add remote
+        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
+        local_repo.find_remote("origin").unwrap().fetch(&["refs/heads/master:refs/remotes/origin/master"], None, None).unwrap();
+
+        // In a real clone, origin/HEAD is set. We simulate this.
+        // refs/remotes/origin/HEAD -> refs/remotes/origin/master
+        local_repo.reference_symbolic("refs/remotes/origin/HEAD", "refs/remotes/origin/master", true, "simulated clone").unwrap();
+
+        let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["origin"]).unwrap();
+        assert_eq!(remote_name, "origin");
+        assert_eq!(branch, "master");
+        
+        // Keep temp dirs alive
+        drop(local_td);
+        drop(remote_td);
+    }
+
+    #[test]
+    fn test_fallback_to_main_if_head_missing() {
+        let (remote_td, remote_repo) = init_repo();
+        
+        // Create 'main' branch on remote
+        let oid = commit(&remote_repo, "Initial commit");
+        remote_repo.branch("main", &remote_repo.find_commit(oid).unwrap(), false).unwrap();
+        
+        let (local_td, local_repo) = init_repo();
+        
+        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+        // Fetch main to refs/remotes/upstream/main
+        local_repo.find_remote("upstream").unwrap().fetch(&["refs/heads/main:refs/remotes/upstream/main"], None, None).unwrap();
+
+        // Note: We do NOT set upstream/HEAD here, to simulate it missing.
+
+        let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
+        assert_eq!(remote_name, "upstream");
+        assert_eq!(branch, "main");
+        
+        drop(local_td);
+        drop(remote_td);
+    }
+
+    #[test]
+    fn test_fallback_to_master_if_head_missing() {
+        let (remote_td, remote_repo) = init_repo();
+        commit(&remote_repo, "Initial commit");
+        // Default is usually master for init, so we have refs/heads/master
+        
+        let (local_td, local_repo) = init_repo();
+        
+        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+        // Fetch master to refs/remotes/upstream/master
+        local_repo.find_remote("upstream").unwrap().fetch(&["refs/heads/master:refs/remotes/upstream/master"], None, None).unwrap();
+
+        // No upstream/HEAD
+
+        let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
+        assert_eq!(remote_name, "upstream");
+        assert_eq!(branch, "master");
+        
+         drop(local_td);
+        drop(remote_td);
+    }
+    
+    #[test]
+    fn test_fails_if_no_matching_branch() {
+        let (remote_td, remote_repo) = init_repo();
+        commit(&remote_repo, "Initial commit");
+        // Rename master to 'devel'
+        let head_ref = remote_repo.head().unwrap();
+        let commit = remote_repo.find_commit(head_ref.target().unwrap()).unwrap();
+        remote_repo.branch("devel", &commit, false).unwrap();
+        
+        let (local_td, local_repo) = init_repo();
+        
+        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
+        local_repo.find_remote("origin").unwrap().fetch(&["refs/heads/devel:refs/remotes/origin/devel"], None, None).unwrap();
+
+        // No HEAD, no main, no master
+        
+        let result = get_remote_and_default_branch(&local_repo, ["origin"]);
+        assert!(result.is_err());
+        
+        drop(local_td);
+        drop(remote_td);
+    }
+
+    #[test]
+    fn test_gp_finds_remote_without_head_or_branches() {
+        let (remote_td, _remote_repo) = init_repo();
+        let (local_td, local_repo) = init_repo();
+
+        // Add "upstream" remote, but no branches fetched, no HEAD.
+        // Just the config entry exists.
+        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+        
+        // Create 'origin' as well to simulate priority checking
+        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
+
+        // Case 1: Upstream first priority
+        let priority = GitPushRemote::UpstreamFirst;
+        // Should find "upstream" even though it has no branches
+        let remote = get_existing_remote(&local_repo, priority).unwrap();
+        assert_eq!(remote, "upstream");
+
+        // Case 2: Origin first priority
+        let priority = GitPushRemote::OriginFirst;
+        let remote = get_existing_remote(&local_repo, priority).unwrap();
+        assert_eq!(remote, "origin");
+
+        drop(local_td);
+        drop(remote_td);
+    }
 }
