@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.smykla.af</string>
+	<key>connections</key>
+	<dict>
+		<key>49561BCC-B0CB-4429-BFD2-B971C147CE21</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E24A96-C8D1-4B0B-AD5B-C1728D52EFDD</string>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Bart Smykla</string>
+	<key>description</key>
+	<string>af tool</string>
+	<key>name</key>
+	<string>af</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>C7E24A96-C8D1-4B0B-AD5B-C1728D52EFDD</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>af</string>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuemode</key>
+				<integer>2</integer>
+				<key>runningsubtext</key>
+				<string>Loading...</string>
+				<key>scriptfile</key>
+				<string>af-alfred-workflow</string>
+				<key>title</key>
+				<string>Search</string>
+				<key>type</key>
+				<integer>8</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>49561BCC-B0CB-4429-BFD2-B971C147CE21</string>
+		</dict>
+	</array>
+	<key>uidata</key>
+	<dict>
+		<key>49561BCC-B0CB-4429-BFD2-B971C147CE21</key>
+		<dict>
+			<key>xpos</key>
+			<integer>50</integer>
+			<key>ypos</key>
+			<integer>50</integer>
+		</dict>
+		<key>C7E24A96-C8D1-4B0B-AD5B-C1728D52EFDD</key>
+		<dict>
+			<key>xpos</key>
+			<integer>225</integer>
+			<key>ypos</key>
+			<integer>50</integer>
+		</dict>
+	</dict>
+</dict>
+</plist>

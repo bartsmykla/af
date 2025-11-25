@@ -1,6 +1,17 @@
+# Build
 /target
-/.idea
 dist/
-.intentionally-empty-file.o
+
+# IDE
+.idea/
+
+# Generated docs
 /docs/man
-tmp
+
+# macOS
+.DS_Store
+
+# Project specific
+.intentionally-empty-file.o
+tmp/
+af-alfred-workflow/workflow/af-alfred-workflow

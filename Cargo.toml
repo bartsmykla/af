@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["xtasks/*"]
+members = ["af-alfred-workflow", "xtasks/*"]
 
 [workspace.package]
 version = "0.7.68"
@@ -9,7 +9,7 @@ repository = "https://github.com/bartsmykla/af"
 license = "MIT"
 
 [workspace.dependencies]
-af = { path = ""}
+af = { path = "" }
 anyhow = "1.0.97"
 clap = { version = "4.5.31", features = ["derive", "env", "string", "wrap_help"] }
 clap-verbosity-flag = "3.0.2"
