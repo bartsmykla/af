@@ -29,7 +29,7 @@ jobs:
         persist-credentials: false
 
     - name: "Setup Cache"
-      uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+      uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
     - name: "Mise Install"
       uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
@@ -145,7 +145,7 @@ jobs:
         toolchain: nightly
 
     - name: "Setup Cache"
-      uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+      uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
     - name: "Build macOS Binary"
       if: contains(matrix.target, 'darwin')
