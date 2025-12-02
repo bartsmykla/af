@@ -38,8 +38,8 @@ jobs:
       id: github-app-token
       uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94 # v2.2.0
       with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+        app-id: ${{ vars.SMYKLOT_APP_ID }}
+        private-key: ${{ secrets.SMYKLOT_APP_PRIVATE_KEY }}
 
     - name: "Get GitHub App User ID"
       id: get-user-id
@@ -139,7 +139,7 @@ jobs:
       uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
     - name: "Install Rust"
-      uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+      uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # stable (uses major version tagging)
       with:
         targets: ${{ matrix.target }}
         toolchain: nightly
