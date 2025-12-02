@@ -1,7 +1,10 @@
 use af::{Cli, consts::AF};
 use clap::{Command, CommandFactory};
 use clap_mangen::Man;
-use std::{env, fs, io, path::{Path, PathBuf}};
+use std::{
+    env, fs, io,
+    path::{Path, PathBuf},
+};
 
 const PATH_MAN_DEFAULT: &str = "docs/man/man1";
 const PATH_MAN_ENV_VAR: &str = "OUT_PATH_MAN";

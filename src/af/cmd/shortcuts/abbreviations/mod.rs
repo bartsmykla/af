@@ -150,11 +150,11 @@ impl Abbreviation {
                 }
 
                 let mut cmd = vec![GIT, DIFF];
-                
+
                 if let Some(ref_name) = reference {
                     cmd.push(ref_name);
                 }
-                
+
                 if let Some(files) = files {
                     cmd.push("--");
                     cmd.extend(files.iter().map(String::as_str));
@@ -258,22 +258,15 @@ mod tests {
         let tree_id = repo.index().unwrap().write_tree().unwrap();
         let tree = repo.find_tree(tree_id).unwrap();
         let signature = git2::Signature::now("Test User", "test@example.com").unwrap();
-        
+
         let parent_commit = match repo.head() {
-             Ok(head) => vec![repo.find_commit(head.target().unwrap()).unwrap()],
-             Err(_) => vec![],
+            Ok(head) => vec![repo.find_commit(head.target().unwrap()).unwrap()],
+            Err(_) => vec![],
         };
         let parents: Vec<&git2::Commit> = parent_commit.iter().collect();
 
-        repo.commit(
-            Some("HEAD"),
-            &signature,
-            &signature,
-            msg,
-            &tree,
-            &parents,
-        )
-        .unwrap()
+        repo.commit(Some("HEAD"), &signature, &signature, msg, &tree, &parents)
+            .unwrap()
     }
 
     #[test]
@@ -281,21 +274,38 @@ mod tests {
         let (remote_td, remote_repo) = init_repo();
         // Create a commit on remote so it has a HEAD
         commit(&remote_repo, "Initial commit");
-        
+
         let (local_td, local_repo) = init_repo();
-        
+
         // Add remote
-        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
-        local_repo.find_remote("origin").unwrap().fetch(&["refs/heads/master:refs/remotes/origin/master"], None, None).unwrap();
+        local_repo
+            .remote("origin", remote_td.path().to_str().unwrap())
+            .unwrap();
+        local_repo
+            .find_remote("origin")
+            .unwrap()
+            .fetch(
+                &["refs/heads/master:refs/remotes/origin/master"],
+                None,
+                None,
+            )
+            .unwrap();
 
         // In a real clone, origin/HEAD is set. We simulate this.
         // refs/remotes/origin/HEAD -> refs/remotes/origin/master
-        local_repo.reference_symbolic("refs/remotes/origin/HEAD", "refs/remotes/origin/master", true, "simulated clone").unwrap();
+        local_repo
+            .reference_symbolic(
+                "refs/remotes/origin/HEAD",
+                "refs/remotes/origin/master",
+                true,
+                "simulated clone",
+            )
+            .unwrap();
 
         let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["origin"]).unwrap();
         assert_eq!(remote_name, "origin");
         assert_eq!(branch, "master");
-        
+
         // Keep temp dirs alive
         drop(local_td);
         drop(remote_td);
@@ -304,23 +314,32 @@ mod tests {
     #[test]
     fn test_fallback_to_main_if_head_missing() {
         let (remote_td, remote_repo) = init_repo();
-        
+
         // Create 'main' branch on remote
         let oid = commit(&remote_repo, "Initial commit");
-        remote_repo.branch("main", &remote_repo.find_commit(oid).unwrap(), false).unwrap();
-        
+        remote_repo
+            .branch("main", &remote_repo.find_commit(oid).unwrap(), false)
+            .unwrap();
+
         let (local_td, local_repo) = init_repo();
-        
-        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+
+        local_repo
+            .remote("upstream", remote_td.path().to_str().unwrap())
+            .unwrap();
         // Fetch main to refs/remotes/upstream/main
-        local_repo.find_remote("upstream").unwrap().fetch(&["refs/heads/main:refs/remotes/upstream/main"], None, None).unwrap();
+        local_repo
+            .find_remote("upstream")
+            .unwrap()
+            .fetch(&["refs/heads/main:refs/remotes/upstream/main"], None, None)
+            .unwrap();
 
         // Note: We do NOT set upstream/HEAD here, to simulate it missing.
 
-        let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
+        let (remote_name, branch) =
+            get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
         assert_eq!(remote_name, "upstream");
         assert_eq!(branch, "main");
-        
+
         drop(local_td);
         drop(remote_td);
     }
@@ -330,23 +349,34 @@ mod tests {
         let (remote_td, remote_repo) = init_repo();
         commit(&remote_repo, "Initial commit");
         // Default is usually master for init, so we have refs/heads/master
-        
+
         let (local_td, local_repo) = init_repo();
-        
-        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
+
+        local_repo
+            .remote("upstream", remote_td.path().to_str().unwrap())
+            .unwrap();
         // Fetch master to refs/remotes/upstream/master
-        local_repo.find_remote("upstream").unwrap().fetch(&["refs/heads/master:refs/remotes/upstream/master"], None, None).unwrap();
+        local_repo
+            .find_remote("upstream")
+            .unwrap()
+            .fetch(
+                &["refs/heads/master:refs/remotes/upstream/master"],
+                None,
+                None,
+            )
+            .unwrap();
 
         // No upstream/HEAD
 
-        let (remote_name, branch) = get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
+        let (remote_name, branch) =
+            get_remote_and_default_branch(&local_repo, ["upstream"]).unwrap();
         assert_eq!(remote_name, "upstream");
         assert_eq!(branch, "master");
-        
-         drop(local_td);
+
+        drop(local_td);
         drop(remote_td);
     }
-    
+
     #[test]
     fn test_fails_if_no_matching_branch() {
         let (remote_td, remote_repo) = init_repo();
@@ -355,17 +385,23 @@ mod tests {
         let head_ref = remote_repo.head().unwrap();
         let commit = remote_repo.find_commit(head_ref.target().unwrap()).unwrap();
         remote_repo.branch("devel", &commit, false).unwrap();
-        
+
         let (local_td, local_repo) = init_repo();
-        
-        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
-        local_repo.find_remote("origin").unwrap().fetch(&["refs/heads/devel:refs/remotes/origin/devel"], None, None).unwrap();
+
+        local_repo
+            .remote("origin", remote_td.path().to_str().unwrap())
+            .unwrap();
+        local_repo
+            .find_remote("origin")
+            .unwrap()
+            .fetch(&["refs/heads/devel:refs/remotes/origin/devel"], None, None)
+            .unwrap();
 
         // No HEAD, no main, no master
-        
+
         let result = get_remote_and_default_branch(&local_repo, ["origin"]);
         assert!(result.is_err());
-        
+
         drop(local_td);
         drop(remote_td);
     }
@@ -377,10 +413,14 @@ mod tests {
 
         // Add "upstream" remote, but no branches fetched, no HEAD.
         // Just the config entry exists.
-        local_repo.remote("upstream", remote_td.path().to_str().unwrap()).unwrap();
-        
+        local_repo
+            .remote("upstream", remote_td.path().to_str().unwrap())
+            .unwrap();
+
         // Create 'origin' as well to simulate priority checking
-        local_repo.remote("origin", remote_td.path().to_str().unwrap()).unwrap();
+        local_repo
+            .remote("origin", remote_td.path().to_str().unwrap())
+            .unwrap();
 
         // Case 1: Upstream first priority
         let priority = GitPushRemote::UpstreamFirst;
