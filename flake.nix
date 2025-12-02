@@ -13,7 +13,7 @@
           pname = "af";
           version = "0.8.6";
           src = prev.fetchFromGitHub {
-            owner = "bartsmykla";
+            owner = "smykla-labs";
             repo = "af";
             rev = "v0.8.6";
             hash = "sha256-YRpAMzIof6833AJblq13nCEIkoJqLsVgR7a9U3DcNuw=";
@@ -62,7 +62,7 @@
 
           meta = {
             description = "Personal helper CLI for dotfiles, git workflows, shortcuts";
-            homepage = "https://github.com/bartsmykla/af";
+            homepage = "https://github.com/smykla-labs/af";
             license = final.lib.licenses.mit;
             mainProgram = "af";
           };

@@ -1,7 +1,7 @@
 use crate::consts::{GO, XPC_SERVICE_NAME};
 use crate::{ides, utils};
-use anyhow::{anyhow, Result};
-use clap::{ValueHint, value_parser, Args, Subcommand};
+use anyhow::{Result, anyhow};
+use clap::{Args, Subcommand, ValueHint, value_parser};
 use clio::ClioPath;
 use regex::Regex;
 use std::env;
