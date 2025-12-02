@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+# shellcheck source=./_common.bash
 source "${BASH_SOURCE%/*}/_common.bash"
 
 common::check_env NEW_VERSION
@@ -25,4 +26,19 @@ awk -v new_version="$NEW_VERSION" '
 if [[ -f flake.nix ]]; then
   sed -i "s/version = \"[^\"]*\";/version = \"$NEW_VERSION\";/" flake.nix
   sed -i "s/rev = \"v[^\"]*\";/rev = \"v$NEW_VERSION\";/" flake.nix
+
+  # Update the source hash by prefetching from GitHub
+  # Extract owner and repo from flake.nix
+  owner=$(sed -n 's/.*owner = "\([^"]*\)".*/\1/p' flake.nix | head -1)
+  repo=$(sed -n 's/.*repo = "\([^"]*\)".*/\1/p' flake.nix | head -1)
+  current_commit=$(git rev-parse HEAD)
+
+  # Use nix-prefetch-url to get the hash for the tarball
+  new_hash=$(nix-prefetch-url --unpack "https://github.com/$owner/$repo/archive/$current_commit.tar.gz" 2>/dev/null | tail -1)
+
+  # Convert to SRI hash format (sha256-...)
+  new_hash_sri=$(nix hash convert --hash-algo sha256 --to sri "$new_hash")
+
+  # Update the hash in flake.nix
+  sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash_sri\";|" flake.nix
 fi
