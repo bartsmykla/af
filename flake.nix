@@ -11,11 +11,11 @@
       overlay = final: prev: {
         af = final.rustPlatform.buildRustPackage {
           pname = "af";
-          version = "0.8.6";
+          version = "0.8.8";
           src = prev.fetchFromGitHub {
             owner = "smykla-labs";
             repo = "af";
-            rev = "v0.8.6";
+            rev = "v0.8.8";
             hash = "sha256-YRpAMzIof6833AJblq13nCEIkoJqLsVgR7a9U3DcNuw=";
           };
           cargoHash = "sha256-37Z0H+AVN7DJmBMCltKLszCMq2YY778AbyVqyXOen3Q=";
