@@ -28,7 +28,6 @@ if [[ -f flake.nix ]]; then
   sed -i "s/rev = \"v[^\"]*\";/rev = \"v$NEW_VERSION\";/" flake.nix
 
   # Update the source hash by prefetching from GitHub
-  # Extract owner and repo from flake.nix
   owner=$(sed -n 's/.*owner = "\([^"]*\)".*/\1/p' flake.nix | head -1)
   repo=$(sed -n 's/.*repo = "\([^"]*\)".*/\1/p' flake.nix | head -1)
   current_commit=$(git rev-parse HEAD)
@@ -41,4 +40,6 @@ if [[ -f flake.nix ]]; then
 
   # Update the hash in flake.nix
   sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash_sri\";|" flake.nix
+
+  # Note: cargoLock.lockFile = ./Cargo.lock is used, so no cargoHash update needed
 fi
