@@ -16,7 +16,7 @@
             owner = "smykla-labs";
             repo = "af";
             rev = "v0.8.8";
-            hash = "sha256-YRpAMzIof6833AJblq13nCEIkoJqLsVgR7a9U3DcNuw=";
+            hash = "sha256-lWcvkAQIJASHa8AG2j4rdzcDfywvo31OcBaw8V0NLvQ=";
           };
           cargoHash = "sha256-37Z0H+AVN7DJmBMCltKLszCMq2YY778AbyVqyXOen3Q=";
 
