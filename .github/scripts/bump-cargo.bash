@@ -20,3 +20,9 @@ awk -v new_version="$NEW_VERSION" '
   }
   { print }
 ' Cargo.lock > Cargo.lock.tmp && mv Cargo.lock.tmp Cargo.lock
+
+# Update flake.nix if it exists
+if [[ -f flake.nix ]]; then
+  sed -i "s/version = \"[^\"]*\";/version = \"$NEW_VERSION\";/" flake.nix
+  sed -i "s/rev = \"v[^\"]*\";/rev = \"v$NEW_VERSION\";/" flake.nix
+fi

@@ -30,6 +30,11 @@ cargo genmd                   # Alias for markdown generation
 
 # Clean generated docs
 mise run clean::gen
+
+# Nix
+nix build .#af               # Build with Nix
+nix flake check              # Check flake
+nix develop                  # Enter dev shell
 ```
 
 ## Architecture

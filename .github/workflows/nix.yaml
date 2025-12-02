@@ -1,0 +1,46 @@
+name: "Nix"
+
+on:
+  pull_request:
+    branches:
+    - "master"
+    paths:
+    - "flake.nix"
+    - "flake.lock"
+    - "src/**/*"
+    - "Cargo.*"
+
+  push:
+    branches:
+    - "master"
+    paths:
+    - "flake.nix"
+    - "flake.lock"
+    - "src/**/*"
+    - "Cargo.*"
+
+  merge_group: {}
+
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  nix-build:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+
+    - name: "Install Nix"
+      uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+
+    - name: "Build with Nix"
+      run: nix build .#af --print-build-logs
+
+    - name: "Verify binary"
+      run: ./result/bin/af --version
+
+    - name: "Check flake"
+      run: nix flake check
