@@ -44,5 +44,18 @@
   },
   "ignorePaths": [
     "**/tmp/**"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update octocrab version in flake.nix when Cargo.lock changes",
+      "fileMatch": ["^flake\\.nix$"],
+      "matchStrings": [
+        "\\$cargoDepsCopy/octocrab-(?<currentValue>[^/]+)/build\\.rs"
+      ],
+      "depNameTemplate": "octocrab",
+      "datasourceTemplate": "crate",
+      "versioningTemplate": "cargo"
+    }
   ]
 }
