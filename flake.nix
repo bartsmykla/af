@@ -12,17 +12,12 @@
         af = final.rustPlatform.buildRustPackage {
           pname = "af";
           version = "0.8.8";
-          src = prev.fetchFromGitHub {
-            owner = "smykla-labs";
-            repo = "af";
-            rev = "v0.8.8";
-            hash = "sha256-lWcvkAQIJASHa8AG2j4rdzcDfywvo31OcBaw8V0NLvQ=";
-          };
+          src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
 
           # Patch octocrab's build.rs to avoid cargo metadata in Nix vendor environment
           postPatch = ''
-            cat > $cargoDepsCopy/octocrab-0.48.0/build.rs << 'EOF'
+            cat > $cargoDepsCopy/octocrab-0.48.1/build.rs << 'EOF'
             use std::env;
             use std::fs;
             use std::path::Path;
