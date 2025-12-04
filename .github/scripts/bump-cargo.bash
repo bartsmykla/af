@@ -27,19 +27,23 @@ if [[ -f flake.nix ]]; then
   sed -i "s/version = \"[^\"]*\";/version = \"$NEW_VERSION\";/" flake.nix
   sed -i "s/rev = \"v[^\"]*\";/rev = \"v$NEW_VERSION\";/" flake.nix
 
-  # Update the source hash by prefetching from GitHub
-  owner=$(sed -n 's/.*owner = "\([^"]*\)".*/\1/p' flake.nix | head -1)
-  repo=$(sed -n 's/.*repo = "\([^"]*\)".*/\1/p' flake.nix | head -1)
-  current_commit=$(git rev-parse HEAD)
+  # Update the source hash by prefetching from GitHub (only if Nix is available)
+  if command -v nix-prefetch-url &>/dev/null; then
+    owner=$(sed -n 's/.*owner = "\([^"]*\)".*/\1/p' flake.nix | head -1)
+    repo=$(sed -n 's/.*repo = "\([^"]*\)".*/\1/p' flake.nix | head -1)
+    current_commit=$(git rev-parse HEAD)
 
-  # Use nix-prefetch-url to get the hash for the tarball
-  new_hash=$(nix-prefetch-url --unpack "https://github.com/$owner/$repo/archive/$current_commit.tar.gz" 2>/dev/null | tail -1)
+    # Use nix-prefetch-url to get the hash for the tarball
+    new_hash=$(nix-prefetch-url --unpack "https://github.com/$owner/$repo/archive/$current_commit.tar.gz" 2>/dev/null | tail -1)
 
-  # Convert to SRI hash format (sha256-...)
-  new_hash_sri=$(nix hash convert --hash-algo sha256 --to sri "$new_hash")
+    # Convert to SRI hash format (sha256-...)
+    new_hash_sri=$(nix hash convert --hash-algo sha256 --to sri "$new_hash")
 
-  # Update the hash in flake.nix
-  sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash_sri\";|" flake.nix
+    # Update the hash in flake.nix
+    sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash_sri\";|" flake.nix
+  else
+    echo "Warning: Nix not found, skipping hash update in flake.nix" >&2
+  fi
 
   # Note: cargoLock.lockFile = ./Cargo.lock is used, so no cargoHash update needed
 fi
