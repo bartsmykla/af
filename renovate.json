@@ -21,21 +21,34 @@
   "packageRules": [
     {
       "description": "GitHub Actions dependencies",
-      "matchManagers": ["github-actions"],
-      "addLabels": ["area/ci"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "addLabels": [
+        "area/ci"
+      ],
       "semanticCommitType": "ci",
       "commitMessageTopic": "{{depName}} action"
     },
     {
       "description": "Group Go tool dependencies",
-      "matchManagers": ["gomod"],
-      "matchDepTypes": ["require"],
-      "matchPackageNames": ["/^golang.org/x/tools/"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepTypes": [
+        "require"
+      ],
+      "matchPackageNames": [
+        "/^golang.org/x/tools/"
+      ],
       "groupName": "Go tooling"
     },
     {
       "description": "Group golangci-lint across mise and CI workflow",
-      "matchPackageNames": ["golangci-lint", "golangci/golangci-lint"],
+      "matchPackageNames": [
+        "golangci-lint",
+        "golangci/golangci-lint"
+      ],
       "groupName": "golangci-lint"
     }
   ],
@@ -49,7 +62,9 @@
     {
       "customType": "regex",
       "description": "Update octocrab version in flake.nix when Cargo.lock changes",
-      "fileMatch": ["^flake\\.nix$"],
+      "managerFilePatterns": [
+        "/^flake\\.nix$/"
+      ],
       "matchStrings": [
         "\\$cargoDepsCopy/octocrab-(?<currentValue>[^/]+)/build\\.rs"
       ],
