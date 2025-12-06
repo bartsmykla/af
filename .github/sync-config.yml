@@ -6,3 +6,16 @@
 sync:
   labels:
     allow_removal: true
+  files:
+    merge:
+      - path: renovate.json
+        strategy: deep-merge
+        overrides:
+          customManagers:
+            - customType: regex
+              description: "Update octocrab version in flake.nix when Cargo.lock changes"
+              managerFilePatterns: ["/^flake\\.nix$/"]
+              matchStrings: ["\\$cargoDepsCopy/octocrab-(?<currentValue>[^/]+)/build\\.rs"]
+              depNameTemplate: octocrab
+              datasourceTemplate: crate
+              versioningTemplate: cargo
