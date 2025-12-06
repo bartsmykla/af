@@ -6,11 +6,9 @@
       "datasourceTemplate": "crate",
       "depNameTemplate": "octocrab",
       "description": "Update octocrab version in flake.nix when Cargo.lock changes",
-      "managerFilePatterns": [
-        "/^flake\\.nix$/"
-      ],
+      "managerFilePatterns": ["/^flake\\.nix$/"],
       "matchStrings": [
-        "\\$cargoDepsCopy/octocrab-(?\u003ccurrentValue\u003e[^/]+)/build\\.rs"
+        "\\$cargoDepsCopy/octocrab-(?<currentValue>[^/]+)/build\\.rs"
       ],
       "versioningTemplate": "cargo"
     }
@@ -32,42 +30,27 @@
     "security:openssf-scorecard",
     "group:linters"
   ],
-  "ignorePaths": [
-    "**/tmp/**"
-  ],
+  "ignorePaths": ["**/tmp/**"],
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "addLabels": [
-        "area/ci"
-      ],
+      "addLabels": ["area/ci"],
       "commitMessageTopic": "{{depName}} action",
       "description": "GitHub Actions dependencies",
-      "matchManagers": [
-        "github-actions"
-      ],
+      "matchManagers": ["github-actions"],
       "semanticCommitType": "ci"
     },
     {
       "description": "Group Go tool dependencies",
       "groupName": "Go tooling",
-      "matchDepTypes": [
-        "require"
-      ],
-      "matchManagers": [
-        "gomod"
-      ],
-      "matchPackageNames": [
-        "/^golang.org/x/tools/"
-      ]
+      "matchDepTypes": ["require"],
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["/^golang.org/x/tools/"]
     },
     {
       "description": "Group golangci-lint across mise and CI workflow",
       "groupName": "golangci-lint",
-      "matchPackageNames": [
-        "golangci-lint",
-        "golangci/golangci-lint"
-      ]
+      "matchPackageNames": ["golangci-lint", "golangci/golangci-lint"]
     }
   ],
   "vulnerabilityAlerts": {
