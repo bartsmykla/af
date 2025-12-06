@@ -1,5 +1,20 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "crate",
+      "depNameTemplate": "octocrab",
+      "description": "Update octocrab version in flake.nix when Cargo.lock changes",
+      "managerFilePatterns": [
+        "/^flake\\.nix$/"
+      ],
+      "matchStrings": [
+        "\\$cargoDepsCopy/octocrab-(?\u003ccurrentValue\u003e[^/]+)/build\\.rs"
+      ],
+      "versioningTemplate": "cargo"
+    }
+  ],
   "extends": [
     "config:best-practices",
     ":semanticCommits",
@@ -17,60 +32,45 @@
     "security:openssf-scorecard",
     "group:linters"
   ],
+  "ignorePaths": [
+    "**/tmp/**"
+  ],
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
+      "addLabels": [
+        "area/ci"
+      ],
+      "commitMessageTopic": "{{depName}} action",
       "description": "GitHub Actions dependencies",
       "matchManagers": [
         "github-actions"
       ],
-      "addLabels": [
-        "area/ci"
-      ],
-      "semanticCommitType": "ci",
-      "commitMessageTopic": "{{depName}} action"
+      "semanticCommitType": "ci"
     },
     {
       "description": "Group Go tool dependencies",
-      "matchManagers": [
-        "gomod"
-      ],
+      "groupName": "Go tooling",
       "matchDepTypes": [
         "require"
       ],
+      "matchManagers": [
+        "gomod"
+      ],
       "matchPackageNames": [
         "/^golang.org/x/tools/"
-      ],
-      "groupName": "Go tooling"
+      ]
     },
     {
       "description": "Group golangci-lint across mise and CI workflow",
+      "groupName": "golangci-lint",
       "matchPackageNames": [
         "golangci-lint",
         "golangci/golangci-lint"
-      ],
-      "groupName": "golangci-lint"
+      ]
     }
   ],
   "vulnerabilityAlerts": {
     "automerge": true
-  },
-  "ignorePaths": [
-    "**/tmp/**"
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Update octocrab version in flake.nix when Cargo.lock changes",
-      "managerFilePatterns": [
-        "/^flake\\.nix$/"
-      ],
-      "matchStrings": [
-        "\\$cargoDepsCopy/octocrab-(?<currentValue>[^/]+)/build\\.rs"
-      ],
-      "depNameTemplate": "octocrab",
-      "datasourceTemplate": "crate",
-      "versioningTemplate": "cargo"
-    }
-  ]
+  }
 }
