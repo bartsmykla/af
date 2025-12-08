@@ -30,7 +30,11 @@
     "security:openssf-scorecard",
     "group:linters"
   ],
-  "ignorePaths": ["**/tmp/**"],
+  "ignorePaths": [
+    "**/tmp/**",
+    ".github/workflows/smyklot-pr-commands.yml",
+    ".github/workflows/smyklot-poll.yml"
+  ],
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
@@ -51,6 +55,12 @@
       "description": "Group golangci-lint across mise and CI workflow",
       "groupName": "golangci-lint",
       "matchPackageNames": ["golangci-lint", "golangci/golangci-lint"]
+    },
+    {
+      "description": "Smyklot action managed by sync-smyklot workflow",
+      "enabled": false,
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["smykla-labs/smyklot"]
     }
   ],
   "vulnerabilityAlerts": {
