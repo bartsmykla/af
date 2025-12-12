@@ -10,7 +10,7 @@ name: Sync Trigger
 on:
   workflow_dispatch: # Manual trigger - runs full sync
   push:
-    branches: ["{{DEFAULT_BRANCH}}"]
+    branches: ["master"]
     paths:
       # Root files from templates/
       - "CODE_OF_CONDUCT.md"
