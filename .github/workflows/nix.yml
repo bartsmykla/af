@@ -3,7 +3,7 @@ name: "Nix"
 on:
   pull_request:
     branches:
-    - "master"
+    - "main"
     paths:
     - "flake.nix"
     - "flake.lock"
@@ -12,7 +12,7 @@ on:
 
   push:
     branches:
-    - "master"
+    - "main"
     paths:
     - "flake.nix"
     - "flake.lock"
