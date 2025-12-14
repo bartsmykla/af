@@ -105,10 +105,10 @@ jobs:
               },
               {
                 "name": "macos-amd64",
-                "runner": "macOS-13",
+                "runner": "macos-15-intel",
                 "target": "x86_64-apple-darwin",
                 "env": {
-                  "OPENSSL_DIR": "/usr/local/opt/openssl"
+                  "OPENSSL_DIR": "/opt/homebrew/opt/openssl"
                 }
               }
             ]
