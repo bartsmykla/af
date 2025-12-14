@@ -8,7 +8,7 @@ on:
 permissions: {}
 
 env:
-  WORKFLOW_TO_WATCH: trigger-bump.yaml
+  WORKFLOW_TO_WATCH: trigger-bump.yml
 
 jobs:
   release:

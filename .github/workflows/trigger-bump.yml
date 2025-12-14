@@ -52,5 +52,5 @@ jobs:
   bump-and-build:
     needs: check-if-should-bump
     if: needs.check-if-should-bump.outputs.bump == 'true'
-    uses: ./.github/workflows/__bump-and-build.yaml
+    uses: ./.github/workflows/__bump-and-build.yml
     secrets: inherit
